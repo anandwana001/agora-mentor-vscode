@@ -173,15 +173,17 @@ function buildCompanionHtml(session: Record<string, unknown>): string {
 <script src="https://cdn.jsdelivr.net/npm/agora-rtc-sdk-ng@4.20.2/AgoraRTC_N-production.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/agora-rtm-sdk@2.2.3/AgoraRTM_N-production.js"></script>
 <style>
+  * { box-sizing: border-box; }
   body { font-family: system-ui, sans-serif; background: #0f111a; color: #cdd9f0;
          display: flex; flex-direction: column; align-items: center; justify-content: center;
          height: 100vh; margin: 0; gap: 20px; }
   h2 { font-size: 20px; margin: 0; }
-  p  { font-size: 13px; color: #888; margin: 0; }
+  p  { font-size: 13px; color: #888; margin: 0; text-align: center; }
   #status { font-size: 14px; color: #ffb020; }
   button { padding: 10px 24px; border-radius: 8px; border: 0; font-size: 14px;
            font-weight: 600; cursor: pointer; background: #7cddff; color: #07101d; }
   button:disabled { opacity: .4; cursor: not-allowed; }
+  #join-btn { padding: 14px 40px; font-size: 16px; border-radius: 12px; }
   .vol { width: 220px; height: 6px; background: #222; border-radius: 3px; overflow: hidden; }
   .bar { height: 100%; width: 0; background: #7cddff; transition: width .08s; }
   .transcript-wrap { width: min(760px, calc(100vw - 32px)); max-height: 42vh; display: flex; flex-direction: column; gap: 10px; }
@@ -193,21 +195,25 @@ function buildCompanionHtml(session: Record<string, unknown>): string {
   .turn-head { margin-bottom: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #888; }
   .turn-body { white-space: pre-wrap; line-height: 1.55; font-size: 13px; color: #e7e7e7; }
   .empty { margin: 0; color: #888; font-size: 13px; text-align: center; padding: 16px 0; }
+  #session { display: none; flex-direction: column; align-items: center; gap: 20px; width: 100%; }
 </style>
 </head>
 <body>
-<h2>🎙 Agora Mentor — Mic Companion</h2>
-<p>This window sends your microphone to the AI agent.<br>Keep it open while your VS Code session is live.</p>
-<div id="status">Connecting…</div>
-<div class="vol"><div class="bar" id="bar"></div></div>
-<div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center">
-  <button id="audio-btn" onclick="unlockAgentAudio()" disabled>Enable Agent Audio</button>
-  <button id="btn" onclick="toggleMute()" disabled>Mute</button>
+<div id="splash" style="display:flex;flex-direction:column;align-items:center;gap:20px">
+  <h2>🎙 Agora Mentor</h2>
+  <p>Click to connect your mic and hear the AI agent.<br>Keep this window open while your VS Code session is live.</p>
+  <button id="join-btn" onclick="joinSession()">Join Session</button>
 </div>
-<div class="transcript-wrap">
-  <div class="transcript-title">Transcript</div>
-  <div id="transcript" class="transcript">
-    <p class="empty">Your conversation will appear here once the agent starts speaking.</p>
+<div id="session">
+  <h2>🎙 Agora Mentor — Live</h2>
+  <div id="status">Connecting…</div>
+  <div class="vol"><div class="bar" id="bar"></div></div>
+  <button id="mute-btn" onclick="toggleMute()" disabled>Mute</button>
+  <div class="transcript-wrap">
+    <div class="transcript-title">Transcript</div>
+    <div id="transcript" class="transcript">
+      <p class="empty">Your conversation will appear here once the agent starts speaking.</p>
+    </div>
   </div>
 </div>
 <script>
@@ -215,45 +221,64 @@ var SESSION = ${s};
 var client, track, muted = false, timer;
 var rtmClient = null;
 var agentAudioTrack = null;
-var agentAudioAttached = false;
-var agentAudioUnlocked = false;
+var audioContextReady = false;
 var transcriptHistory = [];
 var liveTurn = null;
 var chunkBuffers = {};
+
+async function joinSession() {
+  var btn = document.getElementById('join-btn');
+  btn.disabled = true;
+  btn.textContent = 'Connecting…';
+
+  // Unlock the audio context within this click handler — satisfies browser autoplay policy.
+  // Any agent audio that arrives after this will play immediately without a second prompt.
+  try {
+    if (typeof AgoraRTC.resumeAudioContext === 'function') {
+      await AgoraRTC.resumeAudioContext();
+    }
+    audioContextReady = true;
+  } catch (_) {}
+
+  document.getElementById('splash').style.display = 'none';
+  document.getElementById('session').style.display = 'flex';
+
+  await start();
+}
 
 async function start() {
   try {
     client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
     AgoraRTC.setLogLevel(4);
-    // Subscribe to agent audio so this window also hears the agent
     client.on('user-published', function(user, mt) {
       client.subscribe(user, mt).then(function() {
-        if (mt === 'audio' && user.audioTrack && !agentAudioUnlocked) {
+        if (mt === 'audio' && user.audioTrack) {
           agentAudioTrack = user.audioTrack;
-          agentAudioAttached = true;
-          tryPlayAgentAudio();
+          // Audio context is already unlocked — play immediately.
+          agentAudioTrack.play();
         }
       });
     });
     client.on('stream-message', handleStreamMessage);
     if (SESSION.rtmToken) {
-      try {
-        await joinRtm();
-      } catch (_) {}
+      try { await joinRtm(); } catch (_) {}
     }
     await client.join(SESSION.appId, SESSION.channel, SESSION.clientToken, SESSION.clientUid);
     track = await AgoraRTC.createMicrophoneAudioTrack({ encoderConfig: 'speech_low_quality' });
     await client.publish(track);
     document.getElementById('status').textContent = 'Live — agent can hear you.';
     document.getElementById('status').style.color = '#4dd17a';
-    document.getElementById('btn').disabled = false;
-    document.getElementById('audio-btn').disabled = false;
+    document.getElementById('mute-btn').disabled = false;
     timer = setInterval(function() {
       if (track && !muted) document.getElementById('bar').style.width = Math.round(track.getVolumeLevel() * 100) + '%';
     }, 100);
   } catch(e) {
     document.getElementById('status').textContent = 'Error: ' + e.message;
     document.getElementById('status').style.color = '#ff6b7a';
+    var btn = document.getElementById('join-btn');
+    if (btn) { btn.disabled = false; btn.textContent = 'Retry'; }
+    document.getElementById('splash').style.display = 'flex';
+    document.getElementById('session').style.display = 'none';
   }
 }
 
@@ -360,35 +385,10 @@ function renderTranscript() {
   el.scrollTop = el.scrollHeight;
 }
 
-async function tryPlayAgentAudio() {
-  if (!agentAudioTrack || agentAudioUnlocked) return;
-  try {
-    if (typeof AgoraRTC.resumeAudioContext === 'function') {
-      await AgoraRTC.resumeAudioContext();
-    }
-    agentAudioTrack.play();
-    agentAudioUnlocked = true;
-    document.getElementById('status').textContent = 'Live — agent audio unlocked.';
-    document.getElementById('status').style.color = '#4dd17a';
-    document.getElementById('audio-btn').textContent = 'Agent Audio On';
-    document.getElementById('audio-btn').disabled = true;
-  } catch (e) {
-    agentAudioUnlocked = false;
-    document.getElementById('status').textContent = 'Click "Enable Agent Audio" to hear the agent.';
-    document.getElementById('status').style.color = '#ffb020';
-    document.getElementById('audio-btn').textContent = 'Enable Agent Audio';
-  }
-}
-
-function unlockAgentAudio() {
-  tryPlayAgentAudio();
-}
-
 function toggleMute() {
   muted = !muted;
   if (track) track.setEnabled(!muted);
-  document.getElementById('btn').textContent = muted ? 'Unmute' : 'Mute';
-  if (agentAudioAttached && !agentAudioUnlocked) tryPlayAgentAudio();
+  document.getElementById('mute-btn').textContent = muted ? 'Unmute' : 'Mute';
   if (muted) document.getElementById('bar').style.width = '0';
 }
 
@@ -402,8 +402,6 @@ window.addEventListener('beforeunload', function() {
   if (track) { track.stop(); track.close(); }
   if (client) client.leave();
 });
-
-start();
 </script>
 </body>
 </html>`;
