@@ -232,6 +232,13 @@ export class AgoraBackendClient {
       // optional; transcript falls back to stream-message events
     }
 
+    const stopUrl =
+      `https://api.agora.io/api/conversational-ai-agent/v2/projects/${this.config.appId}/agents/${agentId}/leave`;
+
+    const stopAuth = (this.config.customerId && this.config.customerSecret)
+      ? `Basic ${Buffer.from(`${this.config.customerId}:${this.config.customerSecret}`).toString('base64')}`
+      : '';
+
     return {
       prompt,
       session: {
@@ -244,6 +251,8 @@ export class AgoraBackendClient {
         clientToken,
         clientUid: CLIENT_UID,
         rtmToken,
+        stopUrl,
+        stopAuth,
       },
     };
   }

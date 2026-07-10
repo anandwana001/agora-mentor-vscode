@@ -24,6 +24,8 @@ export type SessionState = {
   clientToken?: string; // RTC token for the browser client (uid = 1)
   clientUid?: number;   // numeric RTC UID for the browser client
   rtmToken?: string;    // RTM token for live transcript subscription
+  stopUrl?: string;     // REST endpoint to stop the agent (used by browser companion)
+  stopAuth?: string;    // Pre-computed Authorization header value for the stop call
 };
 
 export type SessionMode = 'cascading' | 'realtime';

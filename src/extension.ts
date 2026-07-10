@@ -221,6 +221,31 @@ var audioContextReady = false;
 var transcriptHistory = [];
 var liveTurn = null;
 var chunkBuffers = {};
+var sessionEnded = false;
+
+function stopAgentRemote() {
+  if (!SESSION.stopUrl || sessionEnded) return;
+  sessionEnded = true;
+  try {
+    // keepalive: true lets this fetch complete even while the page is unloading
+    fetch(SESSION.stopUrl, {
+      method: 'POST',
+      keepalive: true,
+      headers: Object.assign(
+        { 'Content-Type': 'application/json' },
+        SESSION.stopAuth ? { Authorization: SESSION.stopAuth } : {}
+      ),
+    });
+  } catch (_) {}
+}
+
+function showSessionEnded(reason) {
+  sessionEnded = true;
+  document.getElementById('status').textContent = reason || 'Session ended.';
+  document.getElementById('status').style.color = '#888';
+  var muteBtn = document.getElementById('mute-btn');
+  if (muteBtn) muteBtn.disabled = true;
+}
 
 async function joinSession() {
   var btn = document.getElementById('join-btn');
@@ -255,6 +280,12 @@ async function start() {
         }
       });
     });
+    // Detect when the agent leaves (e.g. stopped from VS Code Stop button)
+    client.on('user-left', function(user) {
+      if (String(user.uid) === String(SESSION.agentUid)) {
+        showSessionEnded('Session ended by VS Code.');
+      }
+    });
     client.on('stream-message', handleStreamMessage);
     if (SESSION.rtmToken) {
       try { await joinRtm(); } catch (_) {}
@@ -269,6 +300,7 @@ async function start() {
       if (track && !muted) document.getElementById('bar').style.width = Math.round(track.getVolumeLevel() * 100) + '%';
     }, 100);
   } catch(e) {
+    sessionEnded = true; // Don't attempt a remote stop — we never fully joined
     document.getElementById('status').textContent = 'Error: ' + e.message;
     document.getElementById('status').style.color = '#ff6b7a';
     var btn = document.getElementById('join-btn');
@@ -389,6 +421,8 @@ function toggleMute() {
 }
 
 window.addEventListener('beforeunload', function() {
+  // Stop the agent via REST before the page unloads (keepalive fetch survives unload)
+  stopAgentRemote();
   clearInterval(timer);
   chunkBuffers = {};
   if (rtmClient) {
