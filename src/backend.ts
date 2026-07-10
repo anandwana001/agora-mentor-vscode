@@ -88,6 +88,8 @@ function booleanField(
 
 export class AgoraBackendClient {
   private activeAgentId: string | null = null;
+  private activeAgoraClient: any = null;
+  private activeAgentSession: any = null;
 
   constructor(private readonly config: AgoraBackendConfig) {}
 
@@ -95,6 +97,7 @@ export class AgoraBackendClient {
     prompt: string,
     context: SelectedCodeContext,
     modelConfig?: ModelConfig,
+    chatMode = false,
   ): Promise<StartSessionResult> {
     this.assertConfig();
 
@@ -150,6 +153,8 @@ export class AgoraBackendClient {
           appCertificate: this.config.appCertificate,
         });
 
+    this.activeAgoraClient = client;
+
     const channel = this.buildChannelName();
 
     const cfg = modelConfig ?? defaultModelConfig();
@@ -198,13 +203,15 @@ export class AgoraBackendClient {
       channel,
       agentUid: this.config.agentUid,
       remoteUids: [String(CLIENT_UID)],
-      idleTimeout: 30,
+      // 0 = no idle auto-stop; needed for chat mode where there is no RTC audio.
+      idleTimeout: chatMode ? 0 : 30,
       expiresIn: ExpiresIn.seconds(SESSION_TTL_SECONDS),
       debug: false,
     });
 
     const agentId = await session.start();
     this.activeAgentId = agentId;
+    this.activeAgentSession = session;
 
     // Generate client-side tokens for the webview using agora-token directly.
     // RtcTokenBuilder (AccessToken2) → tokenExpire is a duration in seconds.
@@ -278,7 +285,24 @@ export class AgoraBackendClient {
       // best-effort
     }
     this.activeAgentId = null;
+    this.activeAgoraClient = null;
+    this.activeAgentSession = null;
     return { status: 'idle' as const, message: 'No session running.' };
+  }
+
+  async sendChatMessage(text: string): Promise<void> {
+    if (!this.activeAgentSession) {
+      throw new Error('No active session — start a session first.');
+    }
+    // session.think() injects the text as user input into the LLM pipeline and
+    // handles ConvoAI token generation internally, avoiding auth errors.
+    // The agent responds via RTM (assistant.transcription events).
+    await this.activeAgentSession.think(text, {
+      on_listening_action: 'inject',
+      on_thinking_action:  'interrupt',
+      on_speaking_action:  'ignore',
+      interruptable: true,
+    });
   }
 
   private buildChannelName() {

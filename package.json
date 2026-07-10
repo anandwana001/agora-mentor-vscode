@@ -1,8 +1,8 @@
 {
   "name": "agora-vscode-mentor",
   "displayName": "Agora Mentor",
-  "description": "A VS Code extension for starting Agora voice sessions around selected code.",
-  "version": "0.1.1",
+  "description": "A VS Code extension for voice and text chat sessions with an AI mentor around your code.",
+  "version": "0.1.2",
   "publisher": "anandwana001",
   "license": "MIT",
   "icon": "media/icon.png",

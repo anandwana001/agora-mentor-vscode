@@ -1,20 +1,28 @@
 # Agora Mentor VS Code Extension
 
-Agora Mentor is a VS Code extension for starting Agora voice sessions around the code you have selected. It builds a prompt from the current file, selection, and nearby context, then opens a companion UI for live conversation, transcripts, and mic control.
+Agora Mentor is a VS Code extension for voice and text chat sessions with an AI mentor around the code you have selected. It builds a prompt from the current file, selection, and nearby context, then lets you talk or type to a live AI agent — all without leaving VS Code.
 
 ## What It Is
 
-This extension is language-agnostic and works with any codebase. The prompt is derived from the current editor selection plus surrounding context, so it can be used for explanations, debugging, refactors, tests, or general review.
+This extension is language-agnostic and works with any codebase. The prompt is derived from the current editor selection plus surrounding context, so it can be used for explanations, debugging, refactors, tests, or general review. You can interact with the agent by voice (using a browser companion window) or by text chat entirely within the VS Code panel.
 
 ## How It Works
 
+### Text chat (no mic required)
+
 1. Select code in the editor or place the cursor on a non-empty line.
 2. Open the Agora Mentor panel or use `Agora Mentor: Ask About Selection`.
-3. Pick the focus action: Explain, Find Bugs, Refactor, Tests, or Summarize.
-4. Adjust the model stack if you want custom providers.
-5. Start the voice session.
-6. Use the companion browser window for microphone input when needed.
-7. Watch the transcript in the panel and in the browser companion.
+3. Pick a focus action and adjust the model stack if needed.
+4. Click **Open Chat** to start a text-only session.
+5. Type in the chat box and press **Enter** (or click Send) to talk to the AI Mentor.
+6. The full conversation history persists for the duration of the session.
+
+### Voice session
+
+1. Follow steps 1–3 above.
+2. Click **Open Mic in Browser** to start a voice session.
+3. A companion browser window opens for microphone input and agent audio.
+4. The live transcript streams back to the panel in real time.
 
 ## Branding And UI
 
@@ -91,7 +99,8 @@ Set these values in VS Code settings:
 
 ## Troubleshooting
 
-- If the transcript is empty, start the session from the panel and keep the companion window open.
-- If the browser mic seems silent, click the browser mic control after the session starts.
-- If the session will not stop cleanly, use `Agora Mentor: Stop Session` from the command palette and wait for the panel to return to idle.
-- If you see credential errors, verify `App ID`, `App Certificate`, and optional REST credentials in Settings.
+- **Transcript empty (voice):** Keep the browser companion window open; the transcript streams via Agora RTM.
+- **Chat not responding:** Confirm the session started (status pill shows "live") and the chat input is enabled. If it times out, start a new chat session.
+- **Browser mic silent:** Click the mic control in the companion window after the session starts.
+- **Session won't stop:** Use `Agora Mentor: Stop Session` from the command palette and wait for idle.
+- **Credential errors:** Verify `App ID`, `App Certificate`, and optional REST credentials in Settings.

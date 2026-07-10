@@ -350,12 +350,13 @@ var vscode = acquireVsCodeApi();
 
 // ── State ─────────────────────────────────────────────────────
 var state = {
-  action:  'explain',
-  phase:   'idle',
-  session: null,
-  muted:   false,
-  transcript: [],
-  inProgress: null,
+  action:      'explain',
+  phase:       'idle',
+  sessionMode: null,   // 'voice' | 'chat' | null
+  session:     null,
+  muted:       false,
+  transcript:  [],
+  inProgress:  null,
   modelConfig: clone(DEFAULT_MODEL_CONFIG),
 };
 
@@ -365,24 +366,26 @@ function txt(id, v) { var el = $(id); if (el) el.textContent = v; }
 
 var savedState = typeof vscode.getState === 'function' ? vscode.getState() : null;
 if (savedState) {
-  state.action = savedState.action || state.action;
-  state.phase = savedState.phase || state.phase;
-  state.session = savedState.session || state.session;
-  state.muted = !!savedState.muted;
-  state.transcript = Array.isArray(savedState.transcript) ? savedState.transcript : [];
-  state.inProgress = savedState.inProgress || null;
+  state.action      = savedState.action      || state.action;
+  state.phase       = savedState.phase       || state.phase;
+  state.sessionMode = savedState.sessionMode || state.sessionMode;
+  state.session     = savedState.session     || state.session;
+  state.muted       = !!savedState.muted;
+  state.transcript  = Array.isArray(savedState.transcript) ? savedState.transcript : [];
+  state.inProgress  = savedState.inProgress  || null;
   state.modelConfig = normalizeModelConfig(savedState.modelConfig);
 }
 
 function persistState() {
   if (typeof vscode.setState === 'function') {
     vscode.setState({
-      action: state.action,
-      phase: state.phase,
-      session: state.session,
-      muted: state.muted,
-      transcript: state.transcript,
-      inProgress: state.inProgress,
+      action:      state.action,
+      phase:       state.phase,
+      sessionMode: state.sessionMode,
+      session:     state.session,
+      muted:       state.muted,
+      transcript:  state.transcript,
+      inProgress:  state.inProgress,
       modelConfig: state.modelConfig,
     });
   }
@@ -437,11 +440,16 @@ function render() {
     pill.className   = 'pill ' + state.phase;
   }
 
-  var openBtn = $('btn-open-browser');
-  var stopBtn = $('btn-stop');
-  var comingSoon = hasComingSoonProvider();
-  if (openBtn) openBtn.disabled = !has || state.phase === 'starting' || state.phase === 'live' || comingSoon;
-  if (stopBtn) stopBtn.disabled = state.phase !== 'live';
+  var sessionActive = state.phase === 'starting' || state.phase === 'live';
+  var comingSoon    = hasComingSoonProvider();
+
+  var openVoiceBtn = $('btn-open-browser');
+  var openChatBtn  = $('btn-open-chat');
+  var stopBtn      = $('btn-stop');
+  if (openVoiceBtn) openVoiceBtn.disabled = !has || sessionActive || comingSoon;
+  if (openChatBtn)  openChatBtn.disabled  = !has || sessionActive || comingSoon;
+  if (stopBtn)      stopBtn.disabled      = state.phase !== 'live';
+
   var csHint = $('coming-soon-hint');
   if (csHint) csHint.style.display = comingSoon ? 'block' : 'none';
 
@@ -449,9 +457,20 @@ function render() {
     btn.classList.toggle('active', btn.getAttribute('data-action') === state.action);
   });
 
+  // Voice panel (mic hint) — only in voice mode while live
   var vp = $('voice-panel');
-  if (vp) vp.style.display = state.phase === 'live' ? 'flex' : 'none';
+  if (vp) vp.style.display = (state.phase === 'live' && state.sessionMode === 'voice') ? 'flex' : 'none';
+
+  // Show transcript section only in voice mode (or when no mode is set)
+  var transcriptSection = $('transcript-section');
+  if (transcriptSection) transcriptSection.style.display = state.sessionMode === 'chat' ? 'none' : '';
+
+  // Show chat section only in chat mode
+  var chatSection = $('chat-section');
+  if (chatSection) chatSection.style.display = state.sessionMode === 'chat' ? '' : 'none';
+
   renderTranscript();
+  renderChatMessages();
 }
 
 function renderModelControls() {
@@ -740,8 +759,23 @@ document.querySelectorAll('[data-action]').forEach(function (btn) {
 
 if ($('btn-open-browser')) {
   $('btn-open-browser').addEventListener('click', function () {
+    state.sessionMode = 'voice';
     vscode.postMessage({
       type: 'start-session',
+      mode: 'voice',
+      action: state.action,
+      prompt: buildPrompt(),
+      modelConfig: state.modelConfig,
+    });
+  });
+}
+
+if ($('btn-open-chat')) {
+  $('btn-open-chat').addEventListener('click', function () {
+    state.sessionMode = 'chat';
+    vscode.postMessage({
+      type: 'start-session',
+      mode: 'chat',
       action: state.action,
       prompt: buildPrompt(),
       modelConfig: state.modelConfig,
@@ -752,6 +786,8 @@ if ($('btn-open-browser')) {
 if ($('btn-stop')) {
   $('btn-stop').addEventListener('click', function () {
     leaveRtm();
+    // Keep sessionMode so the chat panel stays visible after stop for reading history.
+    // It resets when the next session starts (session-live handler).
     vscode.postMessage({ type: 'stop-session' });
   });
 }
@@ -779,11 +815,14 @@ window.addEventListener('message', function (ev) {
       render();
       break;
     case 'session-live':
-      state.phase   = 'live';
-      state.session = msg.session;
-      state.transcript = [];
-      state.inProgress = null;
-      txt('status-text', 'Session live — speak in the browser window.');
+      state.phase       = 'live';
+      state.session     = msg.session;
+      state.sessionMode = msg.mode || 'voice';   // reset to the new session's mode
+      state.transcript  = [];
+      state.inProgress  = null;
+      txt('status-text', state.sessionMode === 'chat'
+        ? 'Chat session live — type below to talk to the AI Mentor.'
+        : 'Session live — speak in the browser window.');
       persistState();
       render();
       joinRtmOnly(msg.session);
@@ -813,36 +852,41 @@ function appendTranscript(role, text, turnId, isFinal) {
   };
 
   var transcript = state.transcript.slice();
-  var found = false;
-  for (var i = 0; i < transcript.length; i++) {
-    var current = transcript[i];
-    if (current && current.role === entry.role && String(current.turnId || 'x') === String(entry.turnId || 'x')) {
-      transcript[i] = entry;
-      found = true;
-      break;
+
+  // When a user/system message arrives, finalize any streaming assistant entries
+  // that were interrupted and will never receive their final:true event.
+  if (entry.role !== 'assistant') {
+    for (var k = 0; k < transcript.length; k++) {
+      if (transcript[k] && transcript[k].role === 'assistant' && !transcript[k].isFinal) {
+        transcript[k] = Object.assign({}, transcript[k], { isFinal: true });
+      }
     }
   }
 
-  if (entry.role === 'assistant') {
-    if (entry.isFinal) {
-      if (!found) transcript.push(entry);
-      if (state.inProgress && String(state.inProgress.turnId || 'x') === String(entry.turnId || 'x')) {
-        state.inProgress = null;
-      }
-    } else {
-      state.inProgress = entry;
-      if (!found) {
-        // Keep the live turn separate from completed history.
+  // Update an existing entry in-place when the turnId matches (streaming chunks
+  // for the same turn, or the final event closing a turn already in the list).
+  if (entry.turnId !== null) {
+    for (var i = 0; i < transcript.length; i++) {
+      if (transcript[i] && transcript[i].role === entry.role && transcript[i].turnId === entry.turnId) {
+        transcript[i] = entry;
+        state.transcript = transcript;
+        state.inProgress = (entry.role === 'assistant' && !entry.isFinal) ? entry : null;
+        persistState();
+        renderTranscript();
+        renderChatMessages();
+        return;
       }
     }
-  } else {
-    if (!found) transcript.push(entry);
-    state.inProgress = null;
   }
 
+  // First time we see this entry — add it to the list immediately so it is
+  // never lost, even if the final:true event is delayed or never arrives.
+  transcript.push(entry);
   state.transcript = transcript;
+  state.inProgress = (entry.role === 'assistant' && !entry.isFinal) ? entry : null;
   persistState();
   renderTranscript();
+  renderChatMessages();
 }
 
 function renderTranscript() {
@@ -852,8 +896,6 @@ function renderTranscript() {
   list.innerHTML = '';
 
   var entries = state.transcript.slice();
-  var isStreaming = !!state.inProgress;
-  if (state.inProgress) entries.push(state.inProgress);
 
   if (entries.length === 0) {
     var empty = document.createElement('p');
@@ -865,9 +907,8 @@ function renderTranscript() {
 
   entries.forEach(function (entry, idx) {
     var el = document.createElement('div');
-    var isLast = idx === entries.length - 1;
     el.className = 'transcript-entry ' + (entry.role || 'system') +
-      (isLast && isStreaming ? ' streaming' : '');
+      (!entry.isFinal ? ' streaming' : '');
 
     var rl = document.createElement('span');
     rl.className = 'role';
@@ -905,6 +946,7 @@ async function joinRtmOnly(session) {
     await rtmClient.subscribe(session.channel);
     rtmJoined = true;
     rtmClient.addEventListener('message', handleRtmMessage);
+    syncChatInput();
   } catch (_) {}
 }
 
@@ -929,9 +971,104 @@ function leaveRtm() {
     rtmJoined = false;
     rtmClient = null;
   }
+  // Mark any in-progress streaming entries as final — they're already in transcript.
+  var hadStreaming = state.transcript.some(function (e) { return e && !e.isFinal; });
+  if (hadStreaming) {
+    state.transcript = state.transcript.map(function (e) {
+      return (e && !e.isFinal) ? Object.assign({}, e, { isFinal: true }) : e;
+    });
+  }
   state.inProgress = null;
   persistState();
   renderTranscript();
+  renderChatMessages();
+  syncChatInput();
+}
+
+// ── Text chat ─────────────────────────────────────────────────
+function syncChatInput() {
+  var input  = $('chat-input');
+  var btn    = $('chat-send-btn');
+  var active = !!(rtmClient && rtmJoined) && state.sessionMode === 'chat';
+  if (input) input.disabled = !active;
+  if (btn)   btn.disabled   = !active;
+}
+
+function sendChatMessage() {
+  var input = $('chat-input');
+  if (!input) return;
+  var text = input.value.trim();
+  if (!text) return;
+  if (state.phase !== 'live' || state.sessionMode !== 'chat') return;
+
+  input.value = '';
+  input.style.height = '';
+
+  // The extension calls agentThink(); Agora then emits a user.transcription via RTM
+  // which appendTranscript picks up — no need for an optimistic push that would duplicate it.
+  vscode.postMessage({ type: 'chat-message', text: text });
+}
+
+// ── Chat panel renderer ────────────────────────────────────────
+function renderChatMessages() {
+  var list = $('chat-messages');
+  if (!list) return;
+
+  list.innerHTML = '';
+
+  var entries = state.transcript.slice();
+
+  if (entries.length === 0) {
+    var empty = document.createElement('p');
+    empty.className = 'empty';
+    empty.textContent = 'Send a message below to start the conversation.';
+    list.appendChild(empty);
+    return;
+  }
+
+  entries.forEach(function (entry, idx) {
+    var bubble = document.createElement('div');
+    bubble.className = 'chat-bubble ' + (entry.role || 'system') +
+      (!entry.isFinal ? ' streaming' : '');
+
+    var meta = document.createElement('div');
+    meta.className = 'chat-bubble-meta';
+    meta.textContent = entry.role === 'assistant' ? 'AI Mentor' : (entry.role === 'user' ? 'You' : 'System');
+    if (entry.createdAt) {
+      var time = document.createElement('span');
+      time.style.fontWeight = '400';
+      time.style.opacity = '.6';
+      time.textContent = new Date(entry.createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      meta.appendChild(time);
+    }
+
+    var body = document.createElement('div');
+    body.className = 'chat-bubble-body';
+    body.textContent = entry.text;
+
+    bubble.appendChild(meta);
+    bubble.appendChild(body);
+    list.appendChild(bubble);
+  });
+
+  list.scrollTop = list.scrollHeight;
+}
+
+if ($('chat-send-btn')) {
+  $('chat-send-btn').addEventListener('click', sendChatMessage);
+}
+
+if ($('chat-input')) {
+  $('chat-input').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendChatMessage();
+    }
+  });
+  $('chat-input').addEventListener('input', function () {
+    this.style.height = '';
+    this.style.height = Math.min(this.scrollHeight, 96) + 'px';
+  });
 }
 
 // ── Boot ──────────────────────────────────────────────────────
@@ -1026,8 +1163,9 @@ ${setupBanner}
 
   <section class="card">
     <div class="card-header"><h2>Session</h2></div>
-    <div class="action-row">
+    <div class="action-row session-action-row">
       <button class="btn-primary" id="btn-open-browser">&#127908; Open Mic in Browser</button>
+      <button class="btn-primary"  id="btn-open-chat">&#128172; Open Chat</button>
       <button class="btn-danger"  id="btn-stop" disabled>&#9632; Stop</button>
     </div>
     <p class="coming-soon-hint" id="coming-soon-hint" style="display:none">One or more selected providers are not yet available. Switch to the default Agora-managed providers to start a session.</p>
@@ -1037,10 +1175,35 @@ ${setupBanner}
     </div>
   </section>
 
-  <section class="card transcript-card">
+  <section class="card transcript-card" id="transcript-section">
     <div class="card-header"><h2>Transcript</h2></div>
     <div class="transcript-list" id="transcript-list">
       <p class="empty">Your conversation will appear here once a session starts.</p>
+    </div>
+  </section>
+
+  <section class="card chat-section" id="chat-section" style="display:none">
+    <div class="card-header">
+      <h2>Chat</h2>
+      <span class="meta-row">Text conversation with your AI Mentor</span>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <p class="empty">Send a message below to start the conversation.</p>
+    </div>
+    <div class="chat-input-row">
+      <textarea
+        id="chat-input"
+        class="chat-textarea"
+        placeholder="Ask a question… (Enter ↵ to send, Shift+Enter for new line)"
+        rows="1"
+        disabled
+      ></textarea>
+      <button class="chat-send-btn" id="chat-send-btn" disabled title="Send message">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M14.5 1.5L1 6.5L6.5 9L9 14.5L14.5 1.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+          <path d="M6.5 9L9.5 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </button>
     </div>
   </section>
 
@@ -1250,6 +1413,84 @@ body{
 .transcript-entry.user      .role{color:#7cddff}
 .transcript-entry.assistant .role{color:#a07bff}
 .transcript-entry p{font-size:12.5px;line-height:1.55;white-space:pre-wrap;word-break:break-word;margin:0}
+.session-action-row{flex-wrap:wrap;gap:6px}
+.chat-section{display:flex;flex-direction:column}
+.chat-messages{
+  height:380px;
+  overflow-y:auto;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.chat-bubble{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  max-width:88%;
+}
+.chat-bubble.user{align-self:flex-end;align-items:flex-end}
+.chat-bubble.assistant{align-self:flex-start;align-items:flex-start}
+.chat-bubble-meta{
+  display:flex;align-items:center;gap:6px;
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--vscode-descriptionForeground,#888);
+}
+.chat-bubble.user     .chat-bubble-meta{color:#7cddff}
+.chat-bubble.assistant .chat-bubble-meta{color:#a07bff}
+.chat-bubble-body{
+  padding:9px 12px;
+  border-radius:12px;
+  font-size:12.5px;line-height:1.6;
+  white-space:pre-wrap;word-break:break-word;
+}
+.chat-bubble.user      .chat-bubble-body{
+  background:rgba(124,221,255,.14);
+  border-radius:12px 12px 4px 12px;
+}
+.chat-bubble.assistant .chat-bubble-body{
+  background:rgba(160,123,255,.12);
+  border-radius:12px 12px 12px 4px;
+}
+.chat-bubble.streaming .chat-bubble-body::after{
+  content:'●';display:inline-block;margin-left:5px;font-size:9px;
+  color:var(--vscode-descriptionForeground,#888);
+  animation:blink 1.1s ease-in-out infinite;
+}
+.chat-input-row{
+  display:flex;align-items:flex-end;gap:6px;
+  padding:8px 10px 10px;
+  border-top:1px solid var(--vscode-panel-border,rgba(255,255,255,.08));
+}
+.chat-textarea{
+  flex:1;min-width:0;
+  resize:none;overflow-y:auto;
+  max-height:96px;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:8px;
+  padding:7px 10px;
+  background:rgba(255,255,255,.04);
+  color:var(--vscode-foreground,#cdd9f0);
+  font:inherit;font-size:12.5px;line-height:1.45;
+  transition:border-color .12s;
+}
+.chat-textarea:focus{
+  outline:none;
+  border-color:rgba(124,221,255,.45);
+  box-shadow:0 0 0 1px rgba(124,221,255,.14);
+}
+.chat-textarea:disabled{opacity:.35;cursor:not-allowed}
+.chat-textarea::placeholder{color:var(--vscode-descriptionForeground,#888)}
+.chat-send-btn{
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  width:32px;height:32px;
+  border:0;border-radius:8px;
+  background:#7cddff;color:#07101d;
+  cursor:pointer;transition:opacity .12s,background .12s;
+}
+.chat-send-btn:hover:not(:disabled){opacity:.88}
+.chat-send-btn:disabled{opacity:.3;cursor:not-allowed;background:rgba(255,255,255,.1);color:var(--vscode-foreground,#cdd9f0)}
 </style>`;
 }
 

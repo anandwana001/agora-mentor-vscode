@@ -10,6 +10,7 @@ import { buildHtml } from './webview';
 let panel: vscode.WebviewPanel | undefined;
 let lastSelection: SelectedCodeContext | null = null;
 let activeSession: SessionState | null = null;
+let activeClient: ReturnType<typeof makeClient> | null = null;
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
@@ -118,20 +119,27 @@ async function handleWebviewMessage(msg: any) {
         send({ type: 'session-error', text: 'No code selected — right-click on code first.' });
         return;
       }
+      const sessionMode = (msg as { mode?: string }).mode ?? 'voice';
       send({ type: 'session-phase', phase: 'starting', text: 'Starting Agora session…' });
       try {
         const client = makeClient();
+        activeClient = client;
         const promptFromMsg = (msg as { prompt?: string }).prompt;
         const prompt =
           typeof promptFromMsg === 'string' && promptFromMsg.trim()
             ? promptFromMsg
             : buildMentorPrompt(lastSelection, msg.action ?? 'explain');
-        const result = await client.startSession(prompt, lastSelection, msg.modelConfig);
+        const result = await client.startSession(prompt, lastSelection, msg.modelConfig, sessionMode === 'chat');
         activeSession = result.session;
-        send({ type: 'session-live', session: result.session });
-        openCompanionInBrowser(result.session as Record<string, unknown>);
-        vscode.window.showInformationMessage('Agora Mentor: browser companion opened — click Join Session.');
+        send({ type: 'session-live', session: result.session, mode: sessionMode });
+        if (sessionMode === 'voice') {
+          openCompanionInBrowser(result.session as Record<string, unknown>);
+          vscode.window.showInformationMessage('Agora Mentor: browser companion opened — click Join Session.');
+        } else {
+          vscode.window.showInformationMessage('Agora Mentor: chat session started — type below to talk to the AI Mentor.');
+        }
       } catch (e) {
+        activeClient = null;
         const text = e instanceof Error ? e.message : String(e);
         send({ type: 'session-error', text });
         vscode.window.showErrorMessage('Agora Mentor: ' + text);
@@ -140,14 +148,38 @@ async function handleWebviewMessage(msg: any) {
     }
     case 'stop-session': {
       try {
-        const client = makeClient();
+        const client = activeClient ?? makeClient();
         await client.stopSession(activeSession?.agentId);
       } catch (e) {
         const text = e instanceof Error ? e.message : String(e);
         vscode.window.showErrorMessage('Agora Mentor: ' + text);
       } finally {
         activeSession = null;
+        activeClient = null;
         send({ type: 'session-phase', phase: 'idle', text: 'Session ended.' });
+      }
+      break;
+    }
+    case 'chat-message': {
+      const chatText = String((msg as { text?: string }).text ?? '').trim();
+      if (!chatText) break;
+      if (!activeClient || !activeSession) {
+        send({ type: 'session-error', text: 'No active session.' });
+        break;
+      }
+      try {
+        await activeClient.sendChatMessage(chatText);
+      } catch (e) {
+        const errText = e instanceof Error ? e.message : String(e);
+        const sessionGone = errText.includes('404') || errText.includes('TaskNotFound') || errText.includes('session was not found');
+        if (sessionGone) {
+          activeSession = null;
+          activeClient = null;
+          send({ type: 'session-phase', phase: 'idle', text: 'Session ended — the agent timed out. Start a new chat to continue.' });
+        } else {
+          send({ type: 'session-error', text: 'Chat failed: ' + errText });
+        }
+        vscode.window.showErrorMessage('Agora Mentor: ' + errText);
       }
       break;
     }

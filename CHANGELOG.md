@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.2] — 2026-07-10
+
+### Added
+- **Text chat mode** — "Open Chat" button launches a text-only session; no mic or browser window required.
+- Chat panel renders full conversation history (user and AI bubbles) that persists for the session.
+- Agent streaming responses appear live and are stored in history immediately — never lost even if the `final` event is delayed or the agent is interrupted.
+
+### Fixed
+- Agent messages no longer disappear when the agent starts a new response.
+- Interrupted mid-stream responses are now preserved in chat history.
+- `idleTimeout` set to 0 in chat mode, preventing the agent from being killed after 30 s of audio silence.
+- Text injection now uses `session.think()` (correct ConvoAI token auth) instead of the management endpoint that was returning 401.
+
 ## [0.1.1] — 2026-07-10
 
 ### Changed
