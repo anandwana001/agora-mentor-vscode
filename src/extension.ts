@@ -95,7 +95,13 @@ function openOrRefresh(context: vscode.ExtensionContext, sel: SelectedCodeContex
     vscode.Uri.file(path.join(context.extensionPath, 'media', 'agora-rtm.js')),
   );
 
-  panel.webview.html = buildHtml(panel.webview, sel, rtcSdkUri.toString(), rtmSdkUri.toString());
+  const cfg = vscode.workspace.getConfiguration('agoraMentor');
+  const hasCredentials = !!(
+    String(cfg.get('appId') ?? '').trim() &&
+    String(cfg.get('appCertificate') ?? '').trim()
+  );
+
+  panel.webview.html = buildHtml(panel.webview, sel, rtcSdkUri.toString(), rtmSdkUri.toString(), hasCredentials);
   panel.reveal(col);
 }
 
@@ -143,6 +149,10 @@ async function handleWebviewMessage(msg: any) {
         activeSession = null;
         send({ type: 'session-phase', phase: 'idle', text: 'Session ended.' });
       }
+      break;
+    }
+    case 'open-settings': {
+      vscode.commands.executeCommand('workbench.action.openSettings', 'agoraMentor');
       break;
     }
     case 'toast': {

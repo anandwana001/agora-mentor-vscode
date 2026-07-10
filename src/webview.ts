@@ -306,7 +306,7 @@ const MODEL_UI_SPEC: Record<string, ModelFamilySpec> = {
 
 // ── Public entry point ────────────────────────────────────────────────────────
 
-export function buildHtml(webview: vscode.Webview, sel: SelectedCodeContext | null, rtcSdkUri: string, _rtmSdkUri: string): string {
+export function buildHtml(webview: vscode.Webview, sel: SelectedCodeContext | null, rtcSdkUri: string, _rtmSdkUri: string, hasCredentials = false): string {
   const nonce = nid();
 
   // Serialize selection into a JS literal embedded directly in the <script> block.
@@ -334,7 +334,7 @@ export function buildHtml(webview: vscode.Webview, sel: SelectedCodeContext | nu
   <script src="${_rtmSdkUri}"></script>
 </head>
 <body>
-${htmlBody()}
+${htmlBody(hasCredentials)}
 <script nonce="${nonce}">
 (function () {
 'use strict';
@@ -944,7 +944,26 @@ render();
 
 // ── HTML body ─────────────────────────────────────────────────────────────────
 
-function htmlBody(): string {
+function htmlBody(hasCredentials: boolean): string {
+  const setupBanner = hasCredentials ? '' : `
+  <section class="card setup-card">
+    <div class="setup-body">
+      <div class="setup-icon">🔑</div>
+      <div class="setup-content">
+        <p class="setup-title">Connect your Agora account to get started</p>
+        <ol class="setup-steps">
+          <li>Sign up at <strong>Agora Console</strong> — it's free</li>
+          <li>Create a project, then copy your <strong>App ID</strong> and <strong>App Certificate</strong></li>
+          <li>Paste them in <strong>VS Code Settings → Agora Mentor</strong></li>
+        </ol>
+        <div class="setup-actions">
+          <a class="btn-setup-primary" href="https://sso.agora.io/en/signup/" target="_blank" rel="noopener">Sign up free ↗</a>
+          <button class="btn-setup-secondary" onclick="vscode.postMessage({type:'open-settings'})">Open Settings</button>
+        </div>
+      </div>
+    </div>
+  </section>`;
+
   return `
 <div class="layout">
 
@@ -956,8 +975,13 @@ function htmlBody(): string {
         <span class="brand-subtitle">Conversational AI</span>
       </div>
     </div>
-    <span class="pill" id="status-pill">Ready</span>
+    <div class="header-right">
+      <span class="pill" id="status-pill">Ready</span>
+      <a class="btn-console" href="https://console.agora.io/" target="_blank" rel="noopener" title="Agora Console">Console ↗</a>
+    </div>
   </header>
+
+${setupBanner}
 
   <section class="card">
     <div class="card-header">
@@ -1051,13 +1075,46 @@ body{
 .brand-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
 .brand-name{font-weight:800;font-size:14px;letter-spacing:-.01em}
 .brand-subtitle{font-size:11px;color:var(--vscode-descriptionForeground,#888);text-transform:uppercase;letter-spacing:.12em}
+.header-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .pill{
   font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;
   background:rgba(0,194,255,.12);border:1px solid rgba(0,194,255,.22);color:#7ce7ff;
 }
+.btn-console{
+  font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;
+  border:1px solid rgba(255,255,255,.1);color:var(--vscode-descriptionForeground,#888);
+  text-decoration:none;white-space:nowrap;
+}
+.btn-console:hover{background:rgba(255,255,255,.07);color:var(--vscode-foreground,#cdd9f0)}
+.setup-card{border-color:rgba(0,194,255,.25);background:
+  linear-gradient(135deg,rgba(0,194,255,.06),rgba(160,123,255,.04)),
+  var(--vscode-sideBar-background,#252526)}
+.setup-body{display:flex;gap:12px;padding:14px}
+.setup-icon{font-size:22px;flex-shrink:0;margin-top:1px}
+.setup-content{display:grid;gap:10px;min-width:0}
+.setup-title{font-size:13px;font-weight:700;color:var(--vscode-foreground,#cdd9f0);line-height:1.4;margin:0}
+.setup-steps{
+  margin:0;padding-left:18px;display:grid;gap:5px;
+  font-size:12px;line-height:1.5;color:var(--vscode-descriptionForeground,#888);
+}
+.setup-steps strong{color:var(--vscode-foreground,#cdd9f0)}
+.setup-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
+.btn-setup-primary{
+  display:inline-block;padding:7px 14px;border-radius:7px;border:0;
+  font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;
+  background:#00c2ff;color:#07101d;
+}
+.btn-setup-primary:hover{opacity:.88}
+.btn-setup-secondary{
+  appearance:none;padding:7px 14px;border-radius:7px;font-size:12px;font-weight:600;
+  cursor:pointer;background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);color:var(--vscode-foreground,#cdd9f0);
+}
+.btn-setup-secondary:hover{background:rgba(255,255,255,.1)}
 .pill.live    {background:rgba(77,209,122,.14);color:#5ce189;border-color:rgba(77,209,122,.26)}
 .pill.starting{background:rgba(255,176,32,.14);color:#ffc14d;border-color:rgba(255,176,32,.26)}
 .pill.error   {background:rgba(255,107,122,.14);color:#ff8090;border-color:rgba(255,107,122,.26)}
+.pill.idle,.pill.ready{background:rgba(0,194,255,.12);border-color:rgba(0,194,255,.22);color:#7ce7ff}
 .card{
   background:
     linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02)),
