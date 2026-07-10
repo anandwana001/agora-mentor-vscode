@@ -15,6 +15,7 @@ type ProviderSpec = {
   label: string;
   fields: ModelFieldSpec[];
   note?: string;
+  comingSoon?: boolean;
 };
 
 type ModelFamilySpec = {
@@ -76,39 +77,39 @@ const MODEL_UI_SPEC: Record<string, ModelFamilySpec> = {
         { key: 'smartFormat', label: 'Smart format', placeholder: 'true', help: 'true or false' },
         { key: 'punctuation', label: 'Punctuation', placeholder: 'true', help: 'true or false' },
       ] },
-      { id: 'ares', label: 'ARES', fields: [
+      { id: 'ares', label: 'ARES', comingSoon: true, fields: [
         { key: 'language', label: 'Language', placeholder: 'en' },
       ] },
-      { id: 'assemblyai', label: 'AssemblyAI', fields: [
+      { id: 'assemblyai', label: 'AssemblyAI', comingSoon: true, fields: [
         { key: 'apiKey', label: 'API key', secret: true },
         { key: 'language', label: 'Language', placeholder: 'en' },
       ] },
-      { id: 'amazon', label: 'Amazon Transcribe', fields: [
+      { id: 'amazon', label: 'Amazon Transcribe', comingSoon: true, fields: [
         { key: 'accessKey', label: 'Access key', secret: true },
         { key: 'secretKey', label: 'Secret key', secret: true },
         { key: 'region', label: 'Region', placeholder: 'us-east-1' },
         { key: 'language', label: 'Language', placeholder: 'en-US' },
       ] },
-      { id: 'google', label: 'Google', fields: [
+      { id: 'google', label: 'Google', comingSoon: true, fields: [
         { key: 'apiKey', label: 'API key', secret: true },
         { key: 'language', label: 'Language', placeholder: 'en-US' },
       ] },
-      { id: 'microsoft', label: 'Microsoft Azure', fields: [
+      { id: 'microsoft', label: 'Microsoft Azure', comingSoon: true, fields: [
         { key: 'key', label: 'Key', secret: true },
         { key: 'region', label: 'Region', placeholder: 'eastus' },
         { key: 'language', label: 'Language', placeholder: 'en-US' },
       ] },
-      { id: 'openai', label: 'OpenAI', fields: [
+      { id: 'openai', label: 'OpenAI Whisper', comingSoon: true, fields: [
         { key: 'apiKey', label: 'API key', secret: true },
         { key: 'model', label: 'Model', placeholder: 'whisper-1' },
         { key: 'language', label: 'Language', placeholder: 'en' },
       ] },
-      { id: 'sarvam', label: 'Sarvam', fields: [
+      { id: 'sarvam', label: 'Sarvam', comingSoon: true, fields: [
         { key: 'apiKey', label: 'API key', secret: true },
         { key: 'language', label: 'Language', placeholder: 'en' },
         { key: 'model', label: 'Model', placeholder: 'saaras:v1' },
       ] },
-      { id: 'speechmatics', label: 'Speechmatics', fields: [
+      { id: 'speechmatics', label: 'Speechmatics', comingSoon: true, fields: [
         { key: 'apiKey', label: 'API key', secret: true },
         { key: 'language', label: 'Language', placeholder: 'en' },
         { key: 'model', label: 'Model', placeholder: 'enhanced' },
@@ -125,41 +126,41 @@ const MODEL_UI_SPEC: Record<string, ModelFamilySpec> = {
         { key: 'topP', label: 'Top P', inputType: 'number', placeholder: '0.95' },
         { key: 'maxTokens', label: 'Max tokens', inputType: 'number', placeholder: '1024' },
       ] },
-      { id: 'azure-openai', label: 'Azure OpenAI', fields: [
+      { id: 'azure-openai', label: 'Azure OpenAI', comingSoon: true, fields: [
         { key: 'apiKey', label: 'API key', secret: true },
         { key: 'model', label: 'Model', placeholder: 'gpt-4' },
         { key: 'resourceName', label: 'Resource name', placeholder: 'my-resource' },
         { key: 'deploymentName', label: 'Deployment name', placeholder: 'gpt-4-deployment' },
         { key: 'apiVersion', label: 'API version', placeholder: '2024-08-01-preview' },
       ] },
-      { id: 'anthropic', label: 'Anthropic', fields: [
+      { id: 'anthropic', label: 'Anthropic', comingSoon: true, fields: [
         { key: 'apiKey', label: 'API key', secret: true },
         { key: 'model', label: 'Model', placeholder: 'claude-3-5-sonnet-20241022' },
       ] },
-      { id: 'gemini', label: 'Google Gemini', fields: [
+      { id: 'gemini', label: 'Google Gemini', comingSoon: true, fields: [
         { key: 'apiKey', label: 'API key', secret: true },
         { key: 'model', label: 'Model', placeholder: 'gemini-2.0-flash' },
       ] },
-      { id: 'groq', label: 'Groq', fields: [
+      { id: 'groq', label: 'Groq', comingSoon: true, fields: [
         { key: 'apiKey', label: 'API key', secret: true },
         { key: 'model', label: 'Model', placeholder: 'llama-3.1-70b-versatile' },
       ] },
-      { id: 'vertex-ai', label: 'Vertex AI', fields: [
+      { id: 'vertex-ai', label: 'Vertex AI', comingSoon: true, fields: [
         { key: 'apiKey', label: 'API key', secret: true },
         { key: 'model', label: 'Model', placeholder: 'gemini-2.0-flash' },
         { key: 'projectId', label: 'Project ID', placeholder: 'my-project' },
         { key: 'location', label: 'Location', placeholder: 'us-central1' },
       ] },
-      { id: 'amazon-bedrock', label: 'Amazon Bedrock', fields: [
+      { id: 'amazon-bedrock', label: 'Amazon Bedrock', comingSoon: true, fields: [
         { key: 'apiKey', label: 'API key', secret: true },
         { key: 'model', label: 'Model', placeholder: 'anthropic.claude-3-5-sonnet-20240620-v1:0' },
         { key: 'url', label: 'URL', placeholder: 'https://bedrock-runtime.us-east-1.amazonaws.com' },
       ] },
-      { id: 'dify', label: 'Dify', fields: [
+      { id: 'dify', label: 'Dify', comingSoon: true, fields: [
         { key: 'apiKey', label: 'API key', secret: true },
         { key: 'url', label: 'URL', placeholder: 'https://api.dify.ai' },
       ] },
-      { id: 'custom', label: 'Custom LLM', fields: [
+      { id: 'custom', label: 'Custom LLM', comingSoon: true, fields: [
         { key: 'apiKey', label: 'API key', secret: true, placeholder: 'Optional' },
         { key: 'model', label: 'Model', placeholder: 'model-name' },
         { key: 'url', label: 'URL', placeholder: 'https://your-endpoint.example.com' },
@@ -177,62 +178,62 @@ const MODEL_UI_SPEC: Record<string, ModelFamilySpec> = {
         { key: 'voiceId', label: 'Voice ID', placeholder: 'English_captivating_female1' },
         { key: 'url', label: 'URL', placeholder: 'wss://api.uw.minimax.io/ws/v1/t2a_v2' },
       ] },
-      { id: 'openai', label: 'OpenAI', fields: [
+      { id: 'openai', label: 'OpenAI', comingSoon: true, fields: [
         { key: 'apiKey', label: 'API key', secret: true, placeholder: 'Optional for managed tts-1' },
         { key: 'voice', label: 'Voice', placeholder: 'alloy' },
         { key: 'model', label: 'Model', placeholder: 'tts-1' },
       ] },
-      { id: 'elevenlabs', label: 'ElevenLabs', fields: [
+      { id: 'elevenlabs', label: 'ElevenLabs', comingSoon: true, fields: [
         { key: 'key', label: 'API key', secret: true },
         { key: 'modelId', label: 'Model ID', placeholder: 'eleven_flash_v2_5' },
         { key: 'voiceId', label: 'Voice ID', placeholder: 'pNInz6obpgDQGcFmaJgB' },
         { key: 'sampleRate', label: 'Sample rate', inputType: 'number', placeholder: '24000' },
       ] },
-      { id: 'cartesia', label: 'Cartesia', fields: [
+      { id: 'cartesia', label: 'Cartesia', comingSoon: true, fields: [
         { key: 'apiKey', label: 'API key', secret: true },
         { key: 'voiceId', label: 'Voice ID', placeholder: 'voice-id-here' },
         { key: 'modelId', label: 'Model ID', placeholder: 'sonic-2' },
       ] },
-      { id: 'deepgram', label: 'Deepgram', fields: [
+      { id: 'deepgram', label: 'Deepgram', comingSoon: true, fields: [
         { key: 'apiKey', label: 'API key', secret: true },
         { key: 'model', label: 'Model', placeholder: 'aura-2-thalia-en' },
       ] },
-      { id: 'google', label: 'Google', fields: [
+      { id: 'google', label: 'Google', comingSoon: true, fields: [
         { key: 'key', label: 'API key', secret: true },
         { key: 'voiceName', label: 'Voice name', placeholder: 'en-US-Wavenet-D' },
         { key: 'languageCode', label: 'Language code', placeholder: 'en-US' },
       ] },
-      { id: 'amazon', label: 'Amazon Polly', fields: [
+      { id: 'amazon', label: 'Amazon Polly', comingSoon: true, fields: [
         { key: 'accessKey', label: 'Access key', secret: true },
         { key: 'secretKey', label: 'Secret key', secret: true },
         { key: 'region', label: 'Region', placeholder: 'us-east-1' },
         { key: 'voiceId', label: 'Voice ID', placeholder: 'Joanna' },
       ] },
-      { id: 'microsoft', label: 'Microsoft Azure', fields: [
+      { id: 'microsoft', label: 'Microsoft Azure', comingSoon: true, fields: [
         { key: 'key', label: 'Key', secret: true },
         { key: 'region', label: 'Region', placeholder: 'eastus' },
         { key: 'voiceName', label: 'Voice name', placeholder: 'en-US-JennyNeural' },
       ] },
-      { id: 'hume', label: 'Hume AI', fields: [
+      { id: 'hume', label: 'Hume AI', comingSoon: true, fields: [
         { key: 'key', label: 'API key', secret: true },
         { key: 'configId', label: 'Config ID', placeholder: 'optional' },
       ] },
-      { id: 'murf', label: 'Murf', fields: [
+      { id: 'murf', label: 'Murf', comingSoon: true, fields: [
         { key: 'key', label: 'API key', secret: true },
         { key: 'voiceId', label: 'Voice ID', placeholder: 'Ariana' },
         { key: 'style', label: 'Style', placeholder: 'Conversational' },
       ] },
-      { id: 'rime', label: 'Rime', fields: [
+      { id: 'rime', label: 'Rime', comingSoon: true, fields: [
         { key: 'key', label: 'API key', secret: true },
         { key: 'speaker', label: 'Speaker', placeholder: 'speaker-id' },
         { key: 'modelId', label: 'Model ID', placeholder: 'optional' },
         { key: 'lang', label: 'Language', placeholder: 'en' },
       ] },
-      { id: 'fish-audio', label: 'Fish Audio', fields: [
+      { id: 'fish-audio', label: 'Fish Audio', comingSoon: true, fields: [
         { key: 'key', label: 'API key', secret: true },
         { key: 'referenceId', label: 'Reference ID', placeholder: 'reference-id' },
       ] },
-      { id: 'sarvam', label: 'Sarvam', fields: [
+      { id: 'sarvam', label: 'Sarvam', comingSoon: true, fields: [
         { key: 'key', label: 'API key', secret: true },
         { key: 'speaker', label: 'Speaker', placeholder: 'anushka' },
         { key: 'targetLanguageCode', label: 'Target language', placeholder: 'en-IN' },
@@ -246,13 +247,13 @@ const MODEL_UI_SPEC: Record<string, ModelFamilySpec> = {
         { key: 'apiKey', label: 'API key', secret: true },
         { key: 'model', label: 'Model', placeholder: 'gpt-4o-realtime-preview' },
       ] },
-      { id: 'gemini-live', label: 'Gemini Live', fields: [
+      { id: 'gemini-live', label: 'Gemini Live', comingSoon: true, fields: [
         { key: 'apiKey', label: 'API key', secret: true },
         { key: 'model', label: 'Model', placeholder: 'gemini-live-2.5-flash' },
         { key: 'voice', label: 'Voice', placeholder: 'Aoede' },
         { key: 'instructions', label: 'Instructions', placeholder: 'Optional' },
       ] },
-      { id: 'vertex-ai-live', label: 'Gemini Live via Vertex AI', fields: [
+      { id: 'vertex-ai-live', label: 'Gemini Live via Vertex AI', comingSoon: true, fields: [
         { key: 'model', label: 'Model', placeholder: 'gemini-live-2.5-flash-preview-native-audio-09-2025' },
         { key: 'projectId', label: 'Project ID', placeholder: 'my-project' },
         { key: 'location', label: 'Location', placeholder: 'us-central1' },
@@ -260,7 +261,7 @@ const MODEL_UI_SPEC: Record<string, ModelFamilySpec> = {
         { key: 'voice', label: 'Voice', placeholder: 'Aoede' },
         { key: 'instructions', label: 'Instructions', placeholder: 'Optional' },
       ] },
-      { id: 'xai-grok', label: 'xAI Grok Realtime', fields: [
+      { id: 'xai-grok', label: 'xAI Grok Realtime', comingSoon: true, fields: [
         { key: 'apiKey', label: 'API key', secret: true },
         { key: 'voice', label: 'Voice', placeholder: 'eve' },
         { key: 'language', label: 'Language', placeholder: 'en' },
@@ -271,27 +272,27 @@ const MODEL_UI_SPEC: Record<string, ModelFamilySpec> = {
   avatar: {
     label: 'Avatar',
     providers: [
-      { id: 'liveavatar', label: 'LiveAvatar', fields: [
+      { id: 'liveavatar', label: 'LiveAvatar', comingSoon: true, fields: [
         { key: 'apiKey', label: 'API key', secret: true },
         { key: 'quality', label: 'Quality', placeholder: 'medium' },
         { key: 'agoraUid', label: 'Agora UID', placeholder: 'unique uid' },
         { key: 'avatarId', label: 'Avatar ID', placeholder: 'optional' },
       ], note: 'Use with cascading models only.' },
-      { id: 'heygen', label: 'HeyGen', fields: [
+      { id: 'heygen', label: 'HeyGen', comingSoon: true, fields: [
         { key: 'apiKey', label: 'API key', secret: true },
         { key: 'quality', label: 'Quality', placeholder: 'medium' },
         { key: 'agoraUid', label: 'Agora UID', placeholder: 'unique uid' },
         { key: 'avatarId', label: 'Avatar ID', placeholder: 'optional' },
       ], note: 'HeyGen is the legacy LiveAvatar name.' },
-      { id: 'akool', label: 'Akool', fields: [
+      { id: 'akool', label: 'Akool', comingSoon: true, fields: [
         { key: 'apiKey', label: 'API key', secret: true },
         { key: 'avatarId', label: 'Avatar ID', placeholder: 'optional' },
       ] },
-      { id: 'anam', label: 'Anam', fields: [
+      { id: 'anam', label: 'Anam', comingSoon: true, fields: [
         { key: 'apiKey', label: 'API key', secret: true },
         { key: 'personaId', label: 'Persona ID', placeholder: 'optional' },
       ] },
-      { id: 'generic', label: 'Generic Avatar', fields: [
+      { id: 'generic', label: 'Generic Avatar', comingSoon: true, fields: [
         { key: 'apiKey', label: 'API key', secret: true },
         { key: 'apiBaseUrl', label: 'API base URL', placeholder: 'https://provider.example.com' },
         { key: 'avatarId', label: 'Avatar ID', placeholder: 'avatar-id' },
@@ -508,26 +509,10 @@ function renderModelControls() {
     avatarTitle.textContent = 'Avatar';
     avatarToggle.appendChild(avatarTitle);
 
-    var avatarCheck = document.createElement('input');
-    avatarCheck.type = 'checkbox';
-    avatarCheck.checked = !!state.modelConfig.avatarEnabled;
-    avatarCheck.addEventListener('change', function () {
-      state.modelConfig.avatarEnabled = avatarCheck.checked;
-      if (state.modelConfig.avatarEnabled && !state.modelConfig.avatar) {
-        state.modelConfig.avatar = {
-          provider: 'liveavatar',
-          fields: { quality: 'medium', apiKey: '', agoraUid: '' },
-        };
-      }
-      persistState();
-      renderModelControls();
-    });
-    avatarToggle.appendChild(avatarCheck);
-
-    var avatarDesc = document.createElement('span');
-    avatarDesc.className = 'model-help-inline';
-    avatarDesc.textContent = 'Enable only if you want a visual avatar alongside voice.';
-    avatarToggle.appendChild(avatarDesc);
+    var avatarBadge = document.createElement('span');
+    avatarBadge.className = 'coming-soon-badge';
+    avatarBadge.textContent = 'Coming Soon';
+    avatarToggle.appendChild(avatarBadge);
 
     root.appendChild(avatarToggle);
   }
@@ -595,7 +580,8 @@ function renderFamilySection(familyKey) {
   familySpec.providers.forEach(function (provider) {
     var opt = document.createElement('option');
     opt.value = provider.id;
-    opt.textContent = provider.label;
+    opt.textContent = provider.comingSoon ? provider.label + ' — Coming Soon' : provider.label;
+    if (provider.comingSoon) opt.disabled = true;
     providerSelect.appendChild(opt);
   });
 
@@ -958,7 +944,6 @@ function htmlBody(hasCredentials: boolean): string {
         </ol>
         <div class="setup-actions">
           <a class="btn-setup-primary" href="https://sso.agora.io/en/signup/" target="_blank" rel="noopener">Sign up free ↗</a>
-          <button class="btn-setup-secondary" onclick="vscode.postMessage({type:'open-settings'})">Open Settings</button>
         </div>
       </div>
     </div>
@@ -1220,6 +1205,7 @@ body{
 .model-label{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--vscode-descriptionForeground,#888)}
 .model-help{font-size:11px;line-height:1.45;color:var(--vscode-descriptionForeground,#888)}
 .model-help-inline{font-size:10.5px;line-height:1.35;color:var(--vscode-descriptionForeground,#888);margin-top:-2px}
+.coming-soon-badge{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--vscode-descriptionForeground,#888);background:rgba(128,128,128,.15);border:1px solid rgba(128,128,128,.3);border-radius:3px;padding:1px 5px}
 .transcript-card{}
 .transcript-list{padding:10px 12px 28px;display:grid;gap:8px}
 .empty{font-size:12px;color:var(--vscode-descriptionForeground,#888);padding:4px 0}
