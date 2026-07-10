@@ -1,0 +1,132 @@
+{
+  "name": "agora-vscode-mentor",
+  "displayName": "Agora Mentor",
+  "description": "A VS Code extension for starting Agora voice sessions around selected code.",
+  "version": "0.1.0",
+  "publisher": "anandwana001",
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anandwana001/agora-mentor-vscode"
+  },
+  "bugs": {
+    "url": "https://github.com/anandwana001/agora-mentor-vscode/issues"
+  },
+  "homepage": "https://github.com/anandwana001/agora-mentor-vscode#readme",
+  "engines": {
+    "vscode": "^1.88.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:agoraMentor.openPanel",
+    "onCommand:agoraMentor.askAboutSelection",
+    "onCommand:agoraMentor.startSession",
+    "onCommand:agoraMentor.stopSession",
+    "onCommand:agoraMentor.openCompanion"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "agoraMentor.openPanel",
+        "title": "Agora Mentor: Open Panel"
+      },
+      {
+        "command": "agoraMentor.askAboutSelection",
+        "title": "Agora Mentor: Ask About Selection"
+      },
+      {
+        "command": "agoraMentor.startSession",
+        "title": "Agora Mentor: Start Session"
+      },
+      {
+        "command": "agoraMentor.stopSession",
+        "title": "Agora Mentor: Stop Session"
+      },
+      {
+        "command": "agoraMentor.openCompanion",
+        "title": "Agora Mentor: Open Companion Client"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "agoraMentor.askAboutSelection",
+          "when": "editorHasSelection",
+          "group": "navigation@90"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "agoraMentor.openPanel"
+        },
+        {
+          "command": "agoraMentor.askAboutSelection"
+        },
+        {
+          "command": "agoraMentor.startSession"
+        },
+        {
+          "command": "agoraMentor.stopSession"
+        },
+        {
+          "command": "agoraMentor.openCompanion"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Agora Mentor",
+      "properties": {
+        "agoraMentor.appId": {
+          "type": "string",
+          "default": "",
+          "description": "Agora App ID used by the extension."
+        },
+        "agoraMentor.appCertificate": {
+          "type": "string",
+          "default": "",
+          "description": "Agora App Certificate used locally by the extension host."
+        },
+        "agoraMentor.agentUid": {
+          "type": "string",
+          "default": "123456",
+          "description": "RTC UID reserved for the Agora agent."
+        },
+        "agoraMentor.geofence": {
+          "type": "string",
+          "default": "us",
+          "description": "Agora geofence area for the agent session (us / eu / ap / cn)."
+        },
+        "agoraMentor.customerId": {
+          "type": "string",
+          "default": "",
+          "description": "(Optional) Agora Console RESTful API Customer ID. If set, Basic Auth is used instead of token auth — useful when token auth returns 401."
+        },
+        "agoraMentor.customerSecret": {
+          "type": "string",
+          "default": "",
+          "description": "(Optional) Agora Console RESTful API Customer Secret."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "watch": "tsc -p . --watch",
+    "package": "vsce package"
+  },
+  "dependencies": {
+    "agora-agents": "^2.0.1",
+    "agora-token": "^2.0.5"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.6.2",
+    "@types/node": "^22.10.7",
+    "@types/vscode": "^1.88.0",
+    "typescript": "^5.8.3",
+    "vscode": "^1.1.37"
+  }
+}
