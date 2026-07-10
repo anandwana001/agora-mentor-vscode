@@ -850,6 +850,7 @@ function renderTranscript() {
   list.innerHTML = '';
 
   var entries = state.transcript.slice();
+  var isStreaming = !!state.inProgress;
   if (state.inProgress) entries.push(state.inProgress);
 
   if (entries.length === 0) {
@@ -860,9 +861,11 @@ function renderTranscript() {
     return;
   }
 
-  entries.forEach(function (entry) {
+  entries.forEach(function (entry, idx) {
     var el = document.createElement('div');
-    el.className = 'transcript-entry ' + (entry.role || 'system');
+    var isLast = idx === entries.length - 1;
+    el.className = 'transcript-entry ' + (entry.role || 'system') +
+      (isLast && isStreaming ? ' streaming' : '');
 
     var rl = document.createElement('span');
     rl.className = 'role';
@@ -870,7 +873,9 @@ function renderTranscript() {
 
     var meta = document.createElement('span');
     meta.className = 'time';
-    meta.textContent = entry.createdAt ? new Date(entry.createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '';
+    meta.textContent = entry.createdAt
+      ? new Date(entry.createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+      : '';
 
     var p = document.createElement('p');
     p.textContent = entry.text;
@@ -881,7 +886,9 @@ function renderTranscript() {
     list.appendChild(el);
   });
 
-  list.scrollTop = list.scrollHeight;
+  // Scroll the last entry into view within the VS Code sidebar (no internal scrollbox)
+  var last = list.lastElementChild;
+  if (last) last.scrollIntoView({ block: 'nearest' });
 }
 
 // ── Agora RTM (transcript only — audio lives in the browser companion) ─────────
@@ -1157,11 +1164,17 @@ body{
 .model-help{font-size:11px;line-height:1.45;color:var(--vscode-descriptionForeground,#888)}
 .model-help-inline{font-size:10.5px;line-height:1.35;color:var(--vscode-descriptionForeground,#888);margin-top:-2px}
 .transcript-card{}
-.transcript-list{padding:10px 12px;display:grid;gap:8px;max-height:280px;overflow:auto}
-.empty{font-size:12px;color:var(--vscode-descriptionForeground,#888)}
-.transcript-entry{border-radius:6px;padding:8px 10px;background:rgba(255,255,255,.04)}
-.transcript-entry.user     {background:rgba(124,221,255,.06)}
-.transcript-entry.assistant{background:rgba(160,123,255,.06)}
+.transcript-list{padding:10px 12px 28px;display:grid;gap:8px}
+.empty{font-size:12px;color:var(--vscode-descriptionForeground,#888);padding:4px 0}
+.transcript-entry{border-radius:8px;padding:9px 11px;background:rgba(255,255,255,.04)}
+.transcript-entry.user     {background:rgba(124,221,255,.07)}
+.transcript-entry.assistant{background:rgba(160,123,255,.07)}
+.transcript-entry.streaming{opacity:.75}
+@keyframes blink{0%,100%{opacity:.5}50%{opacity:1}}
+.transcript-entry.streaming::after{
+  content:'●';display:inline-block;margin-left:6px;font-size:9px;
+  color:var(--vscode-descriptionForeground,#888);animation:blink 1.1s ease-in-out infinite;
+}
 .transcript-entry .time{
   float:right;
   font-size:10px;
@@ -1170,12 +1183,12 @@ body{
 }
 .transcript-entry .role{
   display:block;font-size:10px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.07em;margin-bottom:4px;
+  letter-spacing:.07em;margin-bottom:5px;
   color:var(--vscode-descriptionForeground,#888);
 }
 .transcript-entry.user      .role{color:#7cddff}
 .transcript-entry.assistant .role{color:#a07bff}
-.transcript-entry p{font-size:12.5px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.transcript-entry p{font-size:12.5px;line-height:1.55;white-space:pre-wrap;word-break:break-word;margin:0}
 </style>`;
 }
 
