@@ -123,7 +123,8 @@ async function handleWebviewMessage(msg: any) {
         const result = await client.startSession(prompt, lastSelection, msg.modelConfig);
         activeSession = result.session;
         send({ type: 'session-live', session: result.session });
-        vscode.window.showInformationMessage('Agora Mentor: voice session started.');
+        openCompanionInBrowser(result.session as Record<string, unknown>);
+        vscode.window.showInformationMessage('Agora Mentor: browser companion opened — click Join Session.');
       } catch (e) {
         const text = e instanceof Error ? e.message : String(e);
         send({ type: 'session-error', text });
@@ -142,11 +143,6 @@ async function handleWebviewMessage(msg: any) {
         activeSession = null;
         send({ type: 'session-phase', phase: 'idle', text: 'Session ended.' });
       }
-      break;
-    }
-    case 'open-companion': {
-      const s = (msg as { session?: Record<string, unknown> }).session;
-      if (s) openCompanionInBrowser(s);
       break;
     }
     case 'toast': {

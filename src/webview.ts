@@ -436,10 +436,10 @@ function render() {
     pill.className   = 'pill ' + state.phase;
   }
 
-  var startBtn = $('btn-start');
-  var stopBtn  = $('btn-stop');
-  if (startBtn) startBtn.disabled = !has || state.phase === 'starting' || state.phase === 'live';
-  if (stopBtn)  stopBtn.disabled  = state.phase !== 'live';
+  var openBtn = $('btn-open-browser');
+  var stopBtn = $('btn-stop');
+  if (openBtn) openBtn.disabled = !has || state.phase === 'starting' || state.phase === 'live';
+  if (stopBtn) stopBtn.disabled = state.phase !== 'live';
 
   document.querySelectorAll('[data-action]').forEach(function (btn) {
     btn.classList.toggle('active', btn.getAttribute('data-action') === state.action);
@@ -736,8 +736,8 @@ document.querySelectorAll('[data-action]').forEach(function (btn) {
   });
 });
 
-  if ($('btn-start')) {
-  $('btn-start').addEventListener('click', function () {
+if ($('btn-open-browser')) {
+  $('btn-open-browser').addEventListener('click', function () {
     vscode.postMessage({
       type: 'start-session',
       action: state.action,
@@ -749,7 +749,7 @@ document.querySelectorAll('[data-action]').forEach(function (btn) {
 
 if ($('btn-stop')) {
   $('btn-stop').addEventListener('click', function () {
-    leaveRtc();
+    leaveRtm();
     vscode.postMessage({ type: 'stop-session' });
   });
 }
@@ -763,16 +763,6 @@ if ($('btn-copy')) {
         vscode.postMessage({ type: 'toast', text: 'Prompt copied.' });
       });
     }
-  });
-}
-
-if ($('btn-mute')) {
-  $('btn-mute').addEventListener('click', function () { toggleMute(); });
-}
-
-if ($('btn-browser-mic')) {
-  $('btn-browser-mic').addEventListener('click', function () {
-    vscode.postMessage({ type: 'open-companion', session: state.session });
   });
 }
 
@@ -791,10 +781,10 @@ window.addEventListener('message', function (ev) {
       state.session = msg.session;
       state.transcript = [];
       state.inProgress = null;
-      txt('status-text', 'Voice session live — speak into your microphone.');
+      txt('status-text', 'Session live — speak in the browser window.');
       persistState();
       render();
-      joinRtc(msg.session);
+      joinRtmOnly(msg.session);
       break;
     case 'session-error':
       state.phase = 'error';
@@ -894,106 +884,19 @@ function renderTranscript() {
   list.scrollTop = list.scrollHeight;
 }
 
-// ── Agora RTC/RTM ─────────────────────────────────────────────
-var rtcClient = null, rtmClient = null, localTrack = null, volTimer = null, rtcJoined = false, rtmJoined = false;
+// ── Agora RTM (transcript only — audio lives in the browser companion) ─────────
+var rtmClient = null, rtmJoined = false;
 
-// Chunked stream-message assembly: messages split across multiple packets
-// arrive as "seq|total|turn_id|chunk". Reassemble before parsing JSON.
-var chunkBuffers = {};
-
-function handleStreamMessage(uid, stream) {
-  try {
-    var text = new TextDecoder('utf-8').decode(stream);
-    var pipes = (text.match(/\\|/g) || []).length;
-    if (pipes === 3) {
-      // Chunked format: "seq|total|key|payload"
-      var parts = text.split('|');
-      var seq = parseInt(parts[0], 10);
-      var total = parseInt(parts[1], 10);
-      var key = parts[2];
-      var payload = parts[3];
-      if (!chunkBuffers[key]) chunkBuffers[key] = { parts: {}, total: total };
-      chunkBuffers[key].parts[seq] = payload;
-      if (Object.keys(chunkBuffers[key].parts).length === total) {
-        var assembled = '';
-        for (var i = 0; i < total; i++) assembled += chunkBuffers[key].parts[i];
-        delete chunkBuffers[key];
-        parseAndRenderMessage(uid, assembled);
-      }
-      return;
-    }
-    parseAndRenderMessage(uid, text);
-  } catch (_) {}
-}
-
-function parseAndRenderMessage(uid, text) {
-  try {
-    var msg = JSON.parse(text);
-    var obj = msg.object || '';
-    if (obj === 'assistant.transcription') {
-      if (msg.text) appendTranscript('assistant', msg.text, msg.turn_id, !!msg.final);
-    } else if (obj === 'user.transcription') {
-      if (msg.text && msg.final) appendTranscript('user', msg.text, msg.turn_id, true);
-    }
-  } catch (_) {}
-}
-
-function joinRtc(session) {
-  if (typeof AgoraRTC === 'undefined') {
-    txt('status-text', 'RTC SDK not loaded.');
-    return;
-  }
-  AgoraRTC.setLogLevel(4);
-  rtcClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
-  rtcJoined = false;
-
-  // Subscribe to agent audio when it publishes
-  rtcClient.on('user-published', function (user, mediaType) {
-    rtcClient.subscribe(user, mediaType).then(function () {
-      if (mediaType === 'audio' && user.audioTrack) user.audioTrack.play();
-    });
-  });
-
-  // Transcripts arrive as RTC stream-messages (binary → UTF-8 JSON)
-  rtcClient.on('stream-message', handleStreamMessage);
-
-  if (session.rtmToken && session.channel) {
-    joinRtm(session).catch(function (e) {
-      txt('status-text', 'RTM transcript unavailable: ' + e.message);
-    });
-  }
-
-  // Join channel first, then try mic (mic failure is non-fatal)
-  rtcClient.join(session.appId, session.channel, session.clientToken, session.clientUid)
-    .then(function () {
-      rtcJoined = true;
-      txt('status-text', 'Connected — speak into your microphone.');
-      persistState();
-      return AgoraRTC.createMicrophoneAudioTrack({ encoderConfig: 'speech_low_quality' })
-        .then(function (track) {
-          localTrack = track;
-          return rtcClient.publish(localTrack).then(function () {
-            volTimer = setInterval(function () {
-              if (localTrack && !state.muted) setBar('mic-bar', localTrack.getVolumeLevel());
-            }, 100);
-          });
-        })
-        .catch(function () {
-          txt('status-text', 'Agent is speaking. Click "Open Mic in Browser" to talk back.');
-          var btn = $('btn-browser-mic');
-          if (btn) btn.style.display = 'inline-block';
-        });
-    })
-    .catch(function (e) { txt('status-text', 'RTC join failed: ' + e.message); });
-}
-
-async function joinRtm(session) {
+async function joinRtmOnly(session) {
+  if (!session.rtmToken || !session.channel) return;
   if (typeof AgoraRTM === 'undefined' || !AgoraRTM.RTM) return;
-  rtmClient = new AgoraRTM.RTM(session.appId, String(session.clientUid));
-  await rtmClient.login({ token: session.rtmToken });
-  await rtmClient.subscribe(session.channel);
-  rtmJoined = true;
-  rtmClient.addEventListener('message', handleRtmMessage);
+  try {
+    rtmClient = new AgoraRTM.RTM(session.appId, String(session.clientUid));
+    await rtmClient.login({ token: session.rtmToken });
+    await rtmClient.subscribe(session.channel);
+    rtmJoined = true;
+    rtmClient.addEventListener('message', handleRtmMessage);
+  } catch (_) {}
 }
 
 function handleRtmMessage(event) {
@@ -1010,32 +913,16 @@ function handleRtmMessage(event) {
   } catch (_) {}
 }
 
-function leaveRtc() {
-  clearInterval(volTimer); volTimer = null;
-  if (localTrack)  { localTrack.stop(); localTrack.close(); localTrack = null; }
-  if (rtcClient && rtcJoined) { rtcClient.leave(); rtcJoined = false; rtcClient = null; }
+function leaveRtm() {
   if (rtmClient && rtmJoined) {
     try { rtmClient.removeEventListener('message', handleRtmMessage); } catch (_) {}
     try { rtmClient.logout(); } catch (_) {}
     rtmJoined = false;
     rtmClient = null;
   }
-  chunkBuffers = {};
   state.inProgress = null;
   persistState();
   renderTranscript();
-}
-
-function toggleMute() {
-  state.muted = !state.muted;
-  if (localTrack) localTrack.setEnabled(!state.muted);
-  txt('btn-mute', state.muted ? 'Unmute' : 'Mute');
-  persistState();
-}
-
-function setBar(id, level) {
-  var el = $(id);
-  if (el) el.style.width = Math.round(level * 100) + '%';
 }
 
 // ── Boot ──────────────────────────────────────────────────────
@@ -1108,20 +995,12 @@ function htmlBody(): string {
   <section class="card">
     <div class="card-header"><h2>Session</h2></div>
     <div class="action-row">
-      <button class="btn-primary" id="btn-start">&#9654; Start Voice Session</button>
+      <button class="btn-primary" id="btn-open-browser">&#127908; Open Mic in Browser</button>
       <button class="btn-danger"  id="btn-stop" disabled>&#9632; Stop</button>
     </div>
     <p class="status-text" id="status-text">Ready to start.</p>
     <div id="voice-panel" style="display:none" class="voice-panel">
-      <div class="voice-row">
-        <span class="avatar">&#127908;</span>
-        <div class="vol-track"><div class="vol-bar" id="mic-bar"></div></div>
-        <span class="avatar">&#129302;</span>
-      </div>
-      <div class="action-row" style="padding:6px 0 0">
-        <button class="btn-ghost" id="btn-mute">Mute</button>
-        <button class="btn-ghost" id="btn-browser-mic" style="display:none">&#127908; Open Mic in Browser</button>
-      </div>
+      <p class="voice-hint">&#9989; Session running — speak in the browser window. Transcript appears below.</p>
     </div>
   </section>
 
@@ -1230,10 +1109,7 @@ body{
 .btn-ghost:hover{background:rgba(255,255,255,.07)}
 .status-text{padding:6px 12px 10px;font-size:12px;color:var(--vscode-descriptionForeground,#888)}
 .voice-panel{padding:10px 12px;flex-direction:column;gap:10px}
-.voice-row{display:flex;align-items:center;gap:10px}
-.avatar{font-size:22px}
-.vol-track{flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
-.vol-bar{height:100%;width:0;background:#7cddff;border-radius:3px;transition:width .08s}
+.voice-hint{font-size:12px;color:var(--vscode-descriptionForeground,#888);line-height:1.5}
 .model-config{padding:10px 12px 12px;display:grid;gap:10px}
 .model-row{display:grid;gap:8px}
 .model-family{
