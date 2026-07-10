@@ -439,8 +439,11 @@ function render() {
 
   var openBtn = $('btn-open-browser');
   var stopBtn = $('btn-stop');
-  if (openBtn) openBtn.disabled = !has || state.phase === 'starting' || state.phase === 'live';
+  var comingSoon = hasComingSoonProvider();
+  if (openBtn) openBtn.disabled = !has || state.phase === 'starting' || state.phase === 'live' || comingSoon;
   if (stopBtn) stopBtn.disabled = state.phase !== 'live';
+  var csHint = $('coming-soon-hint');
+  if (csHint) csHint.style.display = comingSoon ? 'block' : 'none';
 
   document.querySelectorAll('[data-action]').forEach(function (btn) {
     btn.classList.toggle('active', btn.getAttribute('data-action') === state.action);
@@ -650,6 +653,19 @@ function renderModelField(familyKey, fieldSpec) {
   }
 
   return label;
+}
+
+function hasComingSoonProvider() {
+  var cfg = state.modelConfig;
+  if (cfg.mode === 'realtime') {
+    return !!findProviderSpec('mllm', cfg.mllm.provider).comingSoon;
+  }
+  return (
+    !!findProviderSpec('stt', cfg.stt.provider).comingSoon ||
+    !!findProviderSpec('llm', cfg.llm.provider).comingSoon ||
+    !!findProviderSpec('tts', cfg.tts.provider).comingSoon ||
+    (cfg.avatarEnabled && !!findProviderSpec('avatar', (cfg.avatar || { provider: 'liveavatar' }).provider).comingSoon)
+  );
 }
 
 function findProviderSpec(familyKey, providerId) {
@@ -1014,6 +1030,7 @@ ${setupBanner}
       <button class="btn-primary" id="btn-open-browser">&#127908; Open Mic in Browser</button>
       <button class="btn-danger"  id="btn-stop" disabled>&#9632; Stop</button>
     </div>
+    <p class="coming-soon-hint" id="coming-soon-hint" style="display:none">One or more selected providers are not yet available. Switch to the default Agora-managed providers to start a session.</p>
     <p class="status-text" id="status-text">Ready to start.</p>
     <div id="voice-panel" style="display:none" class="voice-panel">
       <p class="voice-hint">&#9989; Session running — speak in the browser window. Transcript appears below.</p>
@@ -1206,6 +1223,7 @@ body{
 .model-help{font-size:11px;line-height:1.45;color:var(--vscode-descriptionForeground,#888)}
 .model-help-inline{font-size:10.5px;line-height:1.35;color:var(--vscode-descriptionForeground,#888);margin-top:-2px}
 .coming-soon-badge{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--vscode-descriptionForeground,#888);background:rgba(128,128,128,.15);border:1px solid rgba(128,128,128,.3);border-radius:3px;padding:1px 5px}
+.coming-soon-hint{font-size:11px;line-height:1.45;color:var(--vscode-editorWarning-foreground,#cca700);margin:6px 0 0;padding:6px 10px;background:rgba(204,167,0,.08);border-left:3px solid currentColor;border-radius:0 4px 4px 0}
 .transcript-card{}
 .transcript-list{padding:10px 12px 28px;display:grid;gap:8px}
 .empty{font-size:12px;color:var(--vscode-descriptionForeground,#888);padding:4px 0}
