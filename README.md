@@ -39,15 +39,18 @@ By default, the extension uses the managed Agora stack so it works without chang
 - Realtime MLLM: `OpenAI Realtime` with `gpt-4o-realtime-preview`
 - Avatar: off
 
-### Supported provider families
+### Working providers (v0.1)
 
-The UI currently exposes provider families for:
+The following Agora-managed providers are active and fully supported:
 
-- STT: Amazon Transcribe, ARES, AssemblyAI, Deepgram, Google, Microsoft Azure, OpenAI, Sarvam, Speechmatics
-- LLM: Amazon Bedrock, Azure OpenAI, Anthropic, Dify, Google Gemini, Google Vertex AI, Groq, OpenAI, xAI Grok
-- TTS: Amazon Polly, Cartesia, Deepgram, ElevenLabs, Fish Audio, Google, Hume AI, Microsoft Azure, MiniMax, Murf, OpenAI, Rime, Sarvam, xAI
-- Realtime speech models: Google Gemini Live, Gemini Live via Vertex AI, OpenAI Realtime API, xAI Grok Realtime
-- Avatar: Akool, Anam, Generic Avatar, LiveAvatar / HeyGen
+| Family | Provider |
+|---|---|
+| STT | Deepgram |
+| LLM | OpenAI |
+| TTS | MiniMax |
+| Realtime MLLM | OpenAI Realtime |
+
+All other providers shown in the model picker are labelled **Coming Soon** and are disabled. The start button will not activate until all selected providers are available.
 
 ## Session Flow
 
@@ -79,10 +82,12 @@ Set these values in VS Code settings:
 
 ## Development
 
-1. Install dependencies.
-2. Run `pnpm run watch` or `npm run watch` to compile in watch mode.
+1. Install dependencies with `pnpm install`.
+2. Run `pnpm run watch` to start esbuild in watch mode.
 3. Press `F5` in VS Code to launch the extension host.
-4. Use `pnpm run compile` to do a one-shot TypeScript build.
+4. Run `pnpm run compile` for a one-shot build.
+5. Run `pnpm run typecheck` to verify types without emitting files.
+6. Run `pnpm run package` to produce a `.vsix` file ready for upload.
 
 ## Troubleshooting
 

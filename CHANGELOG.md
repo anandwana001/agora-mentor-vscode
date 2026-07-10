@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.1.1] — 2026-07-10
+
+### Changed
+- All audio moved to the browser companion; VS Code panel is now config + transcript only.
+- Session no longer starts until the user clicks **Open Mic in Browser** — eliminates the double-session problem.
+- Both browser close and VS Code Stop button now fully terminate the agent session.
+- Onboarding banner shown in the panel when Agora credentials are missing.
+- Transcript area is now fully scrollable with no height cap.
+
+### Added
+- Non-default providers labelled **Coming Soon** in the model picker (disabled).
+- Start button disabled and warning shown when a Coming Soon provider is selected.
+- Agora Console link always visible in the panel header.
+- esbuild bundler — all dependencies bundled into a single `dist/extension.js`.
+- `.vscodeignore` to keep the VSIX lean (no `src/`, `node_modules/`, dev files).
+
 ## [0.1.0] — 2025-07-10
 
 ### Added
