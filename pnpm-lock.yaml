@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       agora-agents:
-        specifier: ^2.0.1
+        specifier: 2.4.0
         version: 2.4.0
       agora-token:
         specifier: ^2.0.5
@@ -32,7 +32,7 @@ importers:
         version: 5.9.3
       vscode:
         specifier: ^1.1.37
-        version: 1.1.37
+        version: 1.1.37(supports-color@5.4.0)
 
 packages:
 
@@ -2303,7 +2303,7 @@ snapshots:
       domutils: 3.2.2
       entities: 7.0.1
 
-  http-proxy-agent@2.1.0:
+  http-proxy-agent@2.1.0(supports-color@5.4.0):
     dependencies:
       agent-base: 4.3.0
       debug: 3.1.0(supports-color@5.4.0)
@@ -2933,14 +2933,14 @@ snapshots:
 
   version-range@4.15.0: {}
 
-  vscode-test@0.4.3:
+  vscode-test@0.4.3(supports-color@5.4.0):
     dependencies:
-      http-proxy-agent: 2.1.0
+      http-proxy-agent: 2.1.0(supports-color@5.4.0)
       https-proxy-agent: 2.2.4
     transitivePeerDependencies:
       - supports-color
 
-  vscode@1.1.37:
+  vscode@1.1.37(supports-color@5.4.0):
     dependencies:
       glob: 7.2.3
       http-proxy-agent: 4.0.1
@@ -2948,7 +2948,7 @@ snapshots:
       mocha: 5.2.0
       semver: 5.7.2
       source-map-support: 0.5.21
-      vscode-test: 0.4.3
+      vscode-test: 0.4.3(supports-color@5.4.0)
     transitivePeerDependencies:
       - supports-color
 

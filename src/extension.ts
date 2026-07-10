@@ -163,6 +163,9 @@ async function handleWebviewMessage(msg: any) {
 }
 
 function openCompanionInBrowser(session: Record<string, unknown>) {
+  if (!session || typeof session !== 'object' || !('appId' in session)) {
+    throw new Error('Agora session payload is missing appId. The session did not initialize correctly.');
+  }
   const html = buildCompanionHtml(session);
   const tmpFile = path.join(os.tmpdir(), `agora-mentor-companion-${Date.now()}.html`);
   fs.writeFileSync(tmpFile, html, 'utf8');
@@ -170,7 +173,7 @@ function openCompanionInBrowser(session: Record<string, unknown>) {
 }
 
 function buildCompanionHtml(session: Record<string, unknown>): string {
-  const s = JSON.stringify(session);
+  const s = JSON.stringify(session ?? {});
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -279,6 +282,9 @@ async function joinSession() {
 
 async function start() {
   try {
+    if (!SESSION || !SESSION.appId || !SESSION.channel || !SESSION.clientToken) {
+      throw new Error('Session data is missing required Agora credentials. Please start the session again.');
+    }
     client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
     AgoraRTC.setLogLevel(4);
     client.on('user-published', function(user, mt) {
@@ -352,7 +358,7 @@ function handleStreamMessage(uid, stream) {
 }
 
 async function joinRtm() {
-  if (typeof AgoraRTM === 'undefined' || !AgoraRTM.RTM) return;
+  if (!SESSION || !SESSION.appId || !SESSION.clientUid || typeof AgoraRTM === 'undefined' || !AgoraRTM.RTM) return;
   rtmClient = new AgoraRTM.RTM(SESSION.appId, String(SESSION.clientUid));
   await rtmClient.login({ token: SESSION.rtmToken });
   await rtmClient.subscribe(SESSION.channel);

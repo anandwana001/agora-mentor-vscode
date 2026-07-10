@@ -897,7 +897,7 @@ function renderTranscript() {
 var rtmClient = null, rtmJoined = false;
 
 async function joinRtmOnly(session) {
-  if (!session.rtmToken || !session.channel) return;
+  if (!session || !session.appId || !session.rtmToken || !session.channel || !session.clientUid) return;
   if (typeof AgoraRTM === 'undefined' || !AgoraRTM.RTM) return;
   try {
     rtmClient = new AgoraRTM.RTM(session.appId, String(session.clientUid));

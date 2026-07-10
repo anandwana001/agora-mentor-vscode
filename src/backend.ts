@@ -155,6 +155,7 @@ export class AgoraBackendClient {
     const cfg = modelConfig ?? defaultModelConfig();
 
     let agent = new Agent({
+      client,
       instructions: prompt,
       greeting: `Hi! I'm your Agora Mentor. Let's look at ${context.fileName}.`,
       failureMessage: 'Please wait a moment.',
@@ -192,8 +193,8 @@ export class AgoraBackendClient {
       }
     }
 
-    // v2.0.1 API: createSession(client, options)
-    const session = agent.createSession(client, {
+    // agora-agents v2.4 binds the client on Agent and createSession only takes session options.
+    const session = agent.createSession({
       channel,
       agentUid: this.config.agentUid,
       remoteUids: [String(CLIENT_UID)],

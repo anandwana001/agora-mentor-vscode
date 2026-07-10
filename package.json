@@ -129,7 +129,7 @@
     "package": "node build.js --minify && node_modules/.bin/vsce package --no-dependencies"
   },
   "dependencies": {
-    "agora-agents": "^2.0.1",
+    "agora-agents": "2.4.0",
     "agora-token": "^2.0.5"
   },
   "devDependencies": {
