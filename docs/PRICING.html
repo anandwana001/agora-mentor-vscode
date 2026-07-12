@@ -1,0 +1,493 @@
+<h2 class="sr-only">Agora Mentor pricing guide and interactive cost calculator</h2>
+
+<style>
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-size:14px;line-height:1.6;color:var(--text-primary)}
+.page{padding:1.5rem 0 3rem}
+.section-label{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.75rem}
+.divider{border:none;border-top:.5px solid var(--border);margin:2rem 0}
+
+.free-strip{
+  background:var(--surface-1);
+  border:.5px solid var(--border);
+  border-radius:12px;
+  padding:1rem 1.25rem;
+  margin-bottom:1.75rem;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+}
+.free-strip-label{font-size:13px;font-weight:500;color:var(--text-primary);flex-shrink:0}
+.free-chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{
+  font-size:12px;padding:3px 10px;border-radius:999px;
+  border:.5px solid var(--border-success);
+  background:var(--bg-success);color:var(--text-success);
+  font-variant-numeric:tabular-nums;
+}
+.chip span{font-weight:500}
+
+.metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:2rem}
+.metric-card{
+  background:var(--surface-1);border-radius:var(--radius);
+  border:.5px solid var(--border);padding:1rem 1.25rem;
+}
+.metric-top{display:flex;align-items:center;gap:8px;margin-bottom:.5rem}
+.metric-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.metric-name{font-size:12px;color:var(--text-secondary)}
+.metric-value{font-size:22px;font-weight:500;color:var(--text-primary);font-variant-numeric:tabular-nums;line-height:1.2}
+.metric-sub{font-size:11px;color:var(--text-muted);margin-top:3px}
+
+.calc-box{
+  background:var(--surface-1);
+  border:.5px solid var(--border-strong);
+  border-radius:12px;padding:1.5rem 1.5rem 1.25rem;
+  margin-bottom:2rem;
+}
+.calc-inputs{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.25rem}
+.slider-field label{font-size:12px;color:var(--text-secondary);display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.5rem}
+.slider-field label span{font-size:15px;font-weight:500;color:var(--text-primary);font-variant-numeric:tabular-nums}
+.slider-field input[type=range]{width:100%}
+
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem}
+.result-card{border-radius:var(--radius);border:.5px solid var(--border);padding:1rem 1.25rem;background:var(--surface-2)}
+.result-card.featured{border-color:var(--border-accent);background:var(--bg-accent)}
+.result-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.35rem}
+.result-card.featured .result-label{color:var(--text-accent)}
+.result-amount{font-size:28px;font-weight:500;font-variant-numeric:tabular-nums;color:var(--text-primary);line-height:1.1}
+.result-card.featured .result-amount{color:var(--text-accent)}
+.result-breakdown{font-size:11.5px;color:var(--text-muted);margin-top:.35rem;line-height:1.5}
+
+.chart-wrap{position:relative;width:100%;height:220px;margin:.75rem 0 .25rem}
+.chart-note{font-size:11px;color:var(--text-muted);text-align:center;margin-bottom:.5rem}
+
+.mode-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:2rem}
+.mode-card{background:var(--surface-1);border:.5px solid var(--border);border-radius:12px;padding:1.25rem}
+.mode-card-head{display:flex;align-items:center;gap:8px;margin-bottom:.75rem}
+.mode-icon{font-size:18px}
+.mode-title{font-size:14px;font-weight:500;color:var(--text-primary)}
+.mode-subtitle{font-size:11px;color:var(--text-muted);margin-top:1px}
+.mode-rows{display:flex;flex-direction:column;gap:5px;margin-top:.5rem}
+.mode-row{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;line-height:1.4}
+.mode-row-label{color:var(--text-secondary)}
+.mode-row-val{font-weight:500;color:var(--text-primary);font-variant-numeric:tabular-nums}
+.mode-row-val.muted{color:var(--text-muted);font-weight:400}
+.mode-row-val.accent{color:var(--text-success)}
+.mode-sep{border:none;border-top:.5px solid var(--border);margin:.5rem 0}
+
+.threshold-grid{display:grid;gap:8px;margin-bottom:2rem}
+.threshold-row{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;
+  border:.5px solid var(--border);border-radius:var(--radius);overflow:hidden;
+}
+.threshold-row.header{border-color:transparent;background:none}
+.threshold-row.header .tcell{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);padding:.4rem .75rem}
+.tcell{padding:.65rem .75rem;font-size:12.5px;border-right:.5px solid var(--border);background:var(--surface-1)}
+.tcell:last-child{border-right:none}
+.tcell strong{font-weight:500;color:var(--text-primary)}
+.tcell.safe{background:var(--bg-success)}
+.tcell.safe strong{color:var(--text-success)}
+
+.tips{display:grid;gap:8px}
+.tip{
+  display:flex;gap:10px;align-items:flex-start;
+  background:var(--surface-1);border:.5px solid var(--border);
+  border-radius:var(--radius);padding:.85rem 1rem;
+  font-size:12.5px;line-height:1.55;
+}
+.tip-num{
+  width:20px;height:20px;border-radius:50%;
+  background:var(--bg-accent);color:var(--text-accent);
+  font-size:11px;font-weight:500;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;
+}
+.tip-text{color:var(--text-secondary)}
+.tip-text strong{color:var(--text-primary);font-weight:500}
+</style>
+
+<div class="page">
+
+  <p class="section-label">Agora Mentor · Pricing Guide</p>
+  <h1 style="font-size:22px;font-weight:500;color:var(--text-primary);margin-bottom:.5rem;line-height:1.3">What does it cost to use Agora Mentor?</h1>
+  <p style="font-size:14px;color:var(--text-secondary);margin-bottom:1.75rem;max-width:60ch">Three Agora products run under the hood. Their costs differ dramatically — one dominates everything else.</p>
+
+  <div class="free-strip">
+    <span class="free-strip-label"><i class="ti ti-gift" aria-hidden="true" style="font-size:15px;vertical-align:-2px;margin-right:4px"></i>Free tiers included with every Agora account</span>
+    <div class="free-chips">
+      <span class="chip">ConvoAI <span>300 min</span> one-time</span>
+      <span class="chip">RTC Voice <span>10,000 min</span>/month</span>
+      <span class="chip">RTM Signaling <span>1,000,000 msgs</span>/month</span>
+    </div>
+  </div>
+
+  <div class="metric-grid">
+    <div class="metric-card">
+      <div class="metric-top">
+        <div class="metric-dot" style="background:#2a78d6"></div>
+        <span class="metric-name">Conversational AI</span>
+      </div>
+      <div class="metric-value">$0.10<span style="font-size:14px;font-weight:400;color:var(--text-muted)">/min</span></div>
+      <div class="metric-sub">Voice &amp; chat · dominant cost</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-top">
+        <div class="metric-dot" style="background:#1baf7a"></div>
+        <span class="metric-name">RTC Audio (voice only)</span>
+      </div>
+      <div class="metric-value">$0.001<span style="font-size:14px;font-weight:400;color:var(--text-muted)">/min</span></div>
+      <div class="metric-sub">Per participant · 2 per session · usually free tier</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-top">
+        <div class="metric-dot" style="background:#eda100"></div>
+        <span class="metric-name">RTM Signaling (transcripts)</span>
+      </div>
+      <div class="metric-value">$59<span style="font-size:14px;font-weight:400;color:var(--text-muted)">/mo</span></div>
+      <div class="metric-sub">After 1M messages · rarely triggered</div>
+    </div>
+  </div>
+
+  <hr class="divider" style="margin-top:.5rem">
+  <p class="section-label">Interactive cost calculator</p>
+
+  <div class="calc-box">
+    <div class="calc-inputs">
+      <div class="slider-field">
+        <label>Minutes per day <span id="min-out">30</span></label>
+        <input type="range" id="min-slider" min="5" max="180" value="30" step="5">
+      </div>
+      <div class="slider-field">
+        <label>Number of developers <span id="dev-out">1</span></label>
+        <input type="range" id="dev-slider" min="1" max="20" value="1" step="1">
+      </div>
+    </div>
+
+    <div class="result-grid">
+      <div class="result-card" id="voice-card">
+        <div class="result-label"><i class="ti ti-microphone" aria-hidden="true" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>Voice mode / month</div>
+        <div class="result-amount" id="voice-amount">$90</div>
+        <div class="result-breakdown" id="voice-breakdown">ConvoAI $90.00 · RTC free</div>
+      </div>
+      <div class="result-card" id="chat-card">
+        <div class="result-label"><i class="ti ti-message" aria-hidden="true" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>Chat mode / month</div>
+        <div class="result-amount" id="chat-amount">$90</div>
+        <div class="result-breakdown" id="chat-breakdown">ConvoAI $90.00 · no RTC</div>
+      </div>
+    </div>
+
+    <div class="chart-wrap">
+      <canvas id="costChart" role="img" aria-label="Stacked bar chart comparing monthly cost breakdown for voice and chat modes">Cost breakdown: ConvoAI is the dominant cost in both modes; RTC adds a small amount for voice.</canvas>
+    </div>
+    <p class="chart-note" id="free-note">Calculator shows ongoing monthly cost. The first 300 ConvoAI minutes (≈ 5 hrs) are free on new accounts.</p>
+  </div>
+
+  <hr class="divider">
+  <p class="section-label">Cost by mode</p>
+
+  <div class="mode-grid">
+    <div class="mode-card">
+      <div class="mode-card-head">
+        <i class="ti ti-microphone" aria-hidden="true" style="font-size:20px;color:var(--text-accent)"></i>
+        <div>
+          <div class="mode-title">Voice mode</div>
+          <div class="mode-subtitle">Mic + agent audio</div>
+        </div>
+      </div>
+      <div class="mode-rows">
+        <div class="mode-row">
+          <span class="mode-row-label">ConvoAI agent</span>
+          <span class="mode-row-val">$0.10/min</span>
+        </div>
+        <div class="mode-row">
+          <span class="mode-row-label">RTC audio (2 users)</span>
+          <span class="mode-row-val">~$0.002/min</span>
+        </div>
+        <div class="mode-row">
+          <span class="mode-row-label">RTM transcripts</span>
+          <span class="mode-row-val accent">free tier</span>
+        </div>
+        <hr class="mode-sep">
+        <div class="mode-row">
+          <span class="mode-row-label" style="font-weight:500;color:var(--text-primary)">Effective total</span>
+          <span class="mode-row-val" style="color:var(--text-accent)">~$0.102/min</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mode-card">
+      <div class="mode-card-head">
+        <i class="ti ti-message" aria-hidden="true" style="font-size:20px;color:var(--text-accent)"></i>
+        <div>
+          <div class="mode-title">Chat mode</div>
+          <div class="mode-subtitle">Text only, no mic</div>
+        </div>
+      </div>
+      <div class="mode-rows">
+        <div class="mode-row">
+          <span class="mode-row-label">ConvoAI agent</span>
+          <span class="mode-row-val">$0.10/min</span>
+        </div>
+        <div class="mode-row">
+          <span class="mode-row-label">RTC audio</span>
+          <span class="mode-row-val accent">$0 — not used</span>
+        </div>
+        <div class="mode-row">
+          <span class="mode-row-label">RTM transcripts</span>
+          <span class="mode-row-val accent">free tier</span>
+        </div>
+        <hr class="mode-sep">
+        <div class="mode-row">
+          <span class="mode-row-label" style="font-weight:500;color:var(--text-primary)">Effective total</span>
+          <span class="mode-row-val" style="color:var(--text-accent)">$0.10/min</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mode-card">
+      <div class="mode-card-head">
+        <i class="ti ti-adjustments" aria-hidden="true" style="font-size:20px;color:var(--text-accent)"></i>
+        <div>
+          <div class="mode-title">Mixed use</div>
+          <div class="mode-subtitle">Voice + chat sessions</div>
+        </div>
+      </div>
+      <div class="mode-rows">
+        <div class="mode-row">
+          <span class="mode-row-label">Billing model</span>
+          <span class="mode-row-val muted">per-session-minute</span>
+        </div>
+        <div class="mode-row">
+          <span class="mode-row-label">No "mixed" tier</span>
+          <span class="mode-row-val muted">each session priced by type</span>
+        </div>
+        <div class="mode-row">
+          <span class="mode-row-label">RTC free pool</span>
+          <span class="mode-row-val muted">shared across all voice sessions</span>
+        </div>
+        <hr class="mode-sep">
+        <div class="mode-row">
+          <span class="mode-row-label" style="font-weight:500;color:var(--text-primary)">Effective total</span>
+          <span class="mode-row-val" style="color:var(--text-accent)">sum of all sessions</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <p class="section-label">When do charges begin?</p>
+
+  <div class="threshold-grid">
+    <div class="threshold-row header">
+      <div class="tcell" style="background:none;border:none">Product</div>
+      <div class="tcell" style="background:none;border:none">Free until…</div>
+      <div class="tcell" style="background:none;border:none">What triggers a bill</div>
+    </div>
+    <div class="threshold-row">
+      <div class="tcell"><strong>ConvoAI agent</strong><br><span style="font-size:11px;color:var(--text-muted)">Voice &amp; chat both</span></div>
+      <div class="tcell safe"><strong>300 session minutes</strong><br><span style="font-size:11px">one-time new-account credit</span></div>
+      <div class="tcell">Every minute of session time after that · ~10 days at 30 min/day</div>
+    </div>
+    <div class="threshold-row">
+      <div class="tcell"><strong>RTC audio</strong><br><span style="font-size:11px;color:var(--text-muted)">Voice mode only</span></div>
+      <div class="tcell safe"><strong>10,000 participant-min/mo</strong><br><span style="font-size:11px">5,000 voice session minutes</span></div>
+      <div class="tcell">~2.8 hrs/day of continuous voice · resets every month · most users never hit this</div>
+    </div>
+    <div class="threshold-row">
+      <div class="tcell"><strong>RTM signaling</strong><br><span style="font-size:11px;color:var(--text-muted)">Voice &amp; chat both</span></div>
+      <div class="tcell safe"><strong>1,000,000 msgs/mo</strong><br><span style="font-size:11px">≈ 278 hrs of conversation</span></div>
+      <div class="tcell">Effectively unlimited for individual or small team use</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <p class="section-label">Tips to keep costs down</p>
+  <div class="tips">
+    <div class="tip">
+      <div class="tip-num">1</div>
+      <div class="tip-text"><strong>Stop sessions explicitly.</strong> ConvoAI charges from <code style="font-size:11px">session.start()</code> to stop. Voice mode auto-stops after 30 seconds of silence, but chat mode has no idle timeout — click Stop when done.</div>
+    </div>
+    <div class="tip">
+      <div class="tip-num">2</div>
+      <div class="tip-text"><strong>Use chat for exploratory questions.</strong> Chat skips RTC entirely. Identical ConvoAI cost, zero RTC minutes — helpful if a large team is at risk of hitting the 10,000 free RTC minutes.</div>
+    </div>
+    <div class="tip">
+      <div class="tip-num">3</div>
+      <div class="tip-text"><strong>One Agora project per team.</strong> Each Agora project gets its own 10,000 free RTC minutes and 1M free RTM messages per month. For large teams, multiple projects each get their own pool.</div>
+    </div>
+    <div class="tip">
+      <div class="tip-num">4</div>
+      <div class="tip-text"><strong>Monitor in Agora Console.</strong> The Usage dashboard shows ConvoAI minutes, RTC minutes, and RTM messages in real time. Set billing alerts before you need them.</div>
+    </div>
+    <div class="tip">
+      <div class="tip-num">5</div>
+      <div class="tip-text"><strong>Ask about volume pricing.</strong> For sustained monthly spend above ~$200, Agora offers custom pricing. Contact them via the Agora Console for a quote.</div>
+    </div>
+  </div>
+
+  <p style="font-size:11px;color:var(--text-muted);margin-top:1.5rem">Rates from agora.io/en/pricing · July 2026. Verify current rates before budgeting.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+(function(){
+
+function fmt(n){ return '$' + n.toFixed(2) }
+function fmtK(n){ return n >= 1000 ? '$' + (n/1000).toFixed(1) + 'k' : fmt(n) }
+
+var minSlider = document.getElementById('min-slider');
+var devSlider = document.getElementById('dev-slider');
+var minOut    = document.getElementById('min-out');
+var devOut    = document.getElementById('dev-out');
+
+var isDark = window.matchMedia('(prefers-color-scheme:dark)').matches ||
+             document.documentElement.getAttribute('data-theme') === 'dark';
+
+var CONVOAI_RATE   = 0.10;
+var RTC_RATE       = 0.00099;
+var RTC_FREE       = 10000;
+
+function calc(minsPerDay, devs){
+  var monthly    = minsPerDay * 30 * devs;
+  var convoai    = monthly * CONVOAI_RATE;
+  var partMin    = monthly * 2;
+  var rtcBill    = Math.max(0, partMin - RTC_FREE);
+  var rtc        = rtcBill * RTC_RATE;
+  return {voice: convoai + rtc, chat: convoai, convoai: convoai, rtc: rtc,
+          monthly: monthly, partMin: partMin, rtcFree: Math.min(partMin, RTC_FREE) === partMin};
+}
+
+var chartInst = null;
+
+function initChart(){
+  var muted    = isDark ? '#898781' : '#898781';
+  var gridLine = isDark ? '#2c2c2a' : '#e1e0d9';
+  var tickCol  = isDark ? '#898781' : '#898781';
+
+  var ctx = document.getElementById('costChart').getContext('2d');
+  chartInst = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Voice mode', 'Chat mode'],
+      datasets: [
+        {
+          label: 'Conversational AI',
+          data: [0, 0],
+          backgroundColor: '#2a78d6',
+          borderRadius: {topLeft:4, topRight:4, bottomLeft:0, bottomRight:0},
+          borderSkipped: false,
+        },
+        {
+          label: 'RTC audio',
+          data: [0, 0],
+          backgroundColor: '#1baf7a',
+          borderRadius: {topLeft:4, topRight:4, bottomLeft:0, bottomRight:0},
+          borderSkipped: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: {duration: 200},
+      plugins: {
+        legend: {display: false},
+        tooltip: {
+          callbacks: {
+            label: function(ctx){ return ' ' + ctx.dataset.label + ': ' + fmt(ctx.raw) }
+          }
+        }
+      },
+      scales: {
+        x: {
+          stacked: true,
+          grid: {display: false},
+          ticks: {color: tickCol, font: {size: 12}}
+        },
+        y: {
+          stacked: true,
+          grid: {color: gridLine, lineWidth: 1},
+          border: {dash: [3,3], display: false},
+          ticks: {
+            color: tickCol,
+            font: {size: 11},
+            callback: function(v){ return fmtK(v) }
+          }
+        }
+      }
+    }
+  });
+}
+
+function legendEl(){
+  return [
+    {color:'#2a78d6', label:'Conversational AI'},
+    {color:'#1baf7a', label:'RTC audio (voice only)'}
+  ].map(function(item){
+    return '<span style="display:inline-flex;align-items:center;gap:4px;margin-right:14px;font-size:12px;color:var(--text-secondary)">' +
+           '<span style="width:10px;height:10px;border-radius:2px;background:' + item.color + ';flex-shrink:0"></span>' + item.label + '</span>';
+  }).join('');
+}
+
+var legendWrap = document.createElement('div');
+legendWrap.style.cssText = 'display:flex;justify-content:center;margin-bottom:8px';
+legendWrap.innerHTML = legendEl();
+document.querySelector('.calc-box').insertBefore(legendWrap, document.getElementById('costChart').parentElement);
+
+function update(){
+  var minsPerDay = parseInt(minSlider.value, 10);
+  var devs       = parseInt(devSlider.value, 10);
+  minOut.textContent = minsPerDay;
+  devOut.textContent = devs;
+
+  var r = calc(minsPerDay, devs);
+
+  document.getElementById('voice-amount').textContent    = fmtK(r.voice);
+  document.getElementById('chat-amount').textContent     = fmtK(r.chat);
+  document.getElementById('voice-breakdown').textContent =
+    'ConvoAI ' + fmt(r.convoai) + ' · RTC ' + (r.rtc < 0.01 ? 'free tier' : fmt(r.rtc));
+  document.getElementById('chat-breakdown').textContent  =
+    'ConvoAI ' + fmt(r.convoai) + ' · no RTC';
+
+  var freeMinutes = Math.round(300 / (minsPerDay * devs));
+  document.getElementById('free-note').textContent =
+    'Ongoing monthly cost (after the one-time 300 ConvoAI free minutes, which covers ~' +
+    freeMinutes + ' day' + (freeMinutes === 1 ? '' : 's') + ' at this usage).';
+
+  var higherCost = Math.max(r.voice, r.chat);
+  var lower      = r.chat;
+  var featured   = r.voice > r.chat ? 'voice' : 'chat';
+  document.getElementById('voice-card').className = 'result-card' + (r.voice >= r.chat ? ' featured' : '');
+  document.getElementById('chat-card').className  = 'result-card' + (r.chat > r.voice ? ' featured' : '');
+
+  if(chartInst){
+    chartInst.data.datasets[0].data = [r.convoai, r.convoai];
+    chartInst.data.datasets[1].data = [r.rtc, 0];
+
+    var maxY = Math.max(r.voice, 1) * 1.2;
+    chartInst.options.scales.y.max = maxY;
+    chartInst.update('none');
+  }
+}
+
+initChart();
+update();
+
+minSlider.addEventListener('input', update);
+devSlider.addEventListener('input', update);
+
+window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change', function(e){
+  isDark = e.matches || document.documentElement.getAttribute('data-theme') === 'dark';
+  if(chartInst){ chartInst.destroy(); initChart(); update(); }
+});
+
+var observer = new MutationObserver(function(mutations){
+  mutations.forEach(function(m){
+    if(m.attributeName === 'data-theme'){
+      isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if(chartInst){ chartInst.destroy(); initChart(); update(); }
+    }
+  });
+});
+observer.observe(document.documentElement, {attributes:true});
+
+})();
+</script>

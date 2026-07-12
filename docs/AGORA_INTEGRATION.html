@@ -1,0 +1,1599 @@
+<title>Agora Integration — Agora Mentor</title>
+<style>
+/* ── Token layer ─────────────────────────────── */
+:root {
+  --bg:          #0d1117;
+  --surf:        #161b22;
+  --surf2:       #1c2128;
+  --border:      #21262d;
+  --text:        #e6edf3;
+  --muted:       #7d8590;
+  --accent:      #29bfff;
+  --accent-glow: rgba(41,191,255,.12);
+  --accent-dim:  rgba(41,191,255,.18);
+  --green:       #3fb950;
+  --green-dim:   rgba(63,185,80,.14);
+  --purple:      #a371f7;
+  --purple-dim:  rgba(163,113,247,.14);
+  --orange:      #e3b341;
+  --orange-dim:  rgba(227,179,65,.12);
+  --red:         #f85149;
+  --red-dim:     rgba(248,81,73,.12);
+  --font-mono:   ui-monospace,'Cascadia Code','Fira Code',Menlo,monospace;
+  --font-body:   system-ui,-apple-system,'Segoe UI',Helvetica,sans-serif;
+}
+@media(prefers-color-scheme:light){
+  :root{
+    --bg:#ffffff; --surf:#f6f8fa; --surf2:#eaeef2; --border:#d0d7de;
+    --text:#1f2328; --muted:#636c76;
+    --accent:#0073c6; --accent-glow:rgba(0,115,198,.08); --accent-dim:rgba(0,115,198,.14);
+    --green:#1a7f37; --green-dim:rgba(26,127,55,.1);
+    --purple:#7c42dd; --purple-dim:rgba(124,66,221,.1);
+    --orange:#9a6700; --orange-dim:rgba(154,103,0,.1);
+    --red:#cf222e; --red-dim:rgba(207,34,46,.1);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1117; --surf:#161b22; --surf2:#1c2128; --border:#21262d;
+  --text:#e6edf3; --muted:#7d8590;
+  --accent:#29bfff; --accent-glow:rgba(41,191,255,.12); --accent-dim:rgba(41,191,255,.18);
+  --green:#3fb950; --green-dim:rgba(63,185,80,.14);
+  --purple:#a371f7; --purple-dim:rgba(163,113,247,.14);
+  --orange:#e3b341; --orange-dim:rgba(227,179,65,.12);
+  --red:#f85149; --red-dim:rgba(248,81,73,.12);
+}
+:root[data-theme="light"]{
+  --bg:#ffffff; --surf:#f6f8fa; --surf2:#eaeef2; --border:#d0d7de;
+  --text:#1f2328; --muted:#636c76;
+  --accent:#0073c6; --accent-glow:rgba(0,115,198,.08); --accent-dim:rgba(0,115,198,.14);
+  --green:#1a7f37; --green-dim:rgba(26,127,55,.1);
+  --purple:#7c42dd; --purple-dim:rgba(124,66,221,.1);
+  --orange:#9a6700; --orange-dim:rgba(154,103,0,.1);
+  --red:#cf222e; --red-dim:rgba(207,34,46,.1);
+}
+
+/* ── Reset ───────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px;scroll-behavior:smooth}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:var(--font-body); line-height:1.7;
+  display:grid;
+  grid-template-columns:220px 1fr;
+  min-height:100vh;
+}
+
+/* ── Sidebar ─────────────────────────────────── */
+nav{
+  position:sticky; top:0; height:100vh; overflow-y:auto;
+  padding:28px 0 28px 0;
+  border-right:1px solid var(--border);
+  background:var(--surf);
+  font-size:12px;
+}
+.nav-brand{
+  padding:0 20px 20px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:16px;
+}
+.nav-logo{
+  display:flex; align-items:center; gap:8px;
+  margin-bottom:4px;
+}
+.nav-logo svg{width:22px;height:22px;flex-shrink:0}
+.nav-logo-text{font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--text)}
+.nav-version{font-size:10px;color:var(--muted);font-family:var(--font-mono);letter-spacing:.05em}
+.nav-group-label{
+  padding:12px 20px 4px;
+  font-family:var(--font-mono); font-size:10px; font-weight:700;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--muted);
+}
+nav a{
+  display:block; padding:5px 20px;
+  color:var(--muted); text-decoration:none;
+  font-size:12px; border-left:2px solid transparent;
+  transition:color .12s, border-color .12s, background .12s;
+  line-height:1.4;
+}
+nav a:hover{color:var(--text); background:var(--accent-glow); border-left-color:var(--accent)}
+nav a.active{color:var(--accent); border-left-color:var(--accent); background:var(--accent-glow)}
+
+/* ── Theme toggle ────────────────────────────── */
+.theme-btn{
+  position:fixed; top:14px; right:16px;
+  appearance:none; border:1px solid var(--border);
+  background:var(--surf); color:var(--muted);
+  font-size:13px; padding:5px 10px; border-radius:6px;
+  cursor:pointer; z-index:100;
+  font-family:var(--font-mono);
+  transition:color .12s, background .12s;
+}
+.theme-btn:hover{color:var(--text); background:var(--surf2)}
+
+/* ── Main content ────────────────────────────── */
+main{
+  padding:48px 56px 80px;
+  max-width:900px;
+}
+
+/* ── Typography ──────────────────────────────── */
+h1{
+  font-family:var(--font-mono); font-size:28px; font-weight:700;
+  letter-spacing:-.01em; color:var(--text); text-wrap:balance;
+  line-height:1.2;
+}
+h2{
+  font-family:var(--font-mono); font-size:17px; font-weight:700;
+  color:var(--text); margin:52px 0 16px;
+  padding-bottom:10px; border-bottom:1px solid var(--border);
+  text-wrap:balance; letter-spacing:-.01em;
+}
+h2:first-of-type{margin-top:32px}
+h3{
+  font-family:var(--font-mono); font-size:13.5px; font-weight:700;
+  color:var(--text); margin:28px 0 10px; letter-spacing:.02em;
+}
+p{margin:10px 0; max-width:72ch}
+strong{color:var(--text); font-weight:600}
+
+/* ── Header block ────────────────────────────── */
+.page-header{
+  margin-bottom:40px; padding-bottom:32px;
+  border-bottom:1px solid var(--border);
+}
+.page-eyebrow{
+  font-family:var(--font-mono); font-size:11px;
+  letter-spacing:.12em; text-transform:uppercase;
+  color:var(--accent); margin-bottom:10px;
+}
+.page-meta{
+  margin-top:16px; display:flex; gap:16px; flex-wrap:wrap;
+}
+.badge{
+  font-family:var(--font-mono); font-size:11px;
+  padding:3px 8px; border-radius:4px;
+  border:1px solid var(--border);
+  color:var(--muted); background:var(--surf);
+}
+.badge.accent{border-color:var(--accent-dim);color:var(--accent);background:var(--accent-glow)}
+.badge.green{border-color:var(--green-dim);color:var(--green);background:var(--green-dim)}
+
+/* ── Tables ──────────────────────────────────── */
+.table-wrap{overflow-x:auto; margin:16px 0}
+table{
+  width:100%; border-collapse:collapse;
+  font-size:12.5px; font-variant-numeric:tabular-nums;
+}
+th{
+  font-family:var(--font-mono); font-size:10.5px; font-weight:700;
+  letter-spacing:.08em; text-transform:uppercase;
+  color:var(--muted); text-align:left;
+  padding:8px 12px; border-bottom:2px solid var(--border);
+  white-space:nowrap;
+}
+td{
+  padding:9px 12px; border-bottom:1px solid var(--border);
+  vertical-align:top; line-height:1.5;
+}
+tr:last-child td{border-bottom:0}
+tr:hover td{background:var(--surf)}
+code{
+  font-family:var(--font-mono); font-size:11.5px;
+  background:var(--surf2); padding:1px 5px;
+  border-radius:3px; border:1px solid var(--border);
+  color:var(--text);
+}
+
+/* ── Code block ──────────────────────────────── */
+pre{
+  background:var(--surf2); border:1px solid var(--border);
+  border-radius:6px; padding:16px 18px;
+  overflow-x:auto; font-size:12px;
+  font-family:var(--font-mono); line-height:1.65;
+  margin:16px 0;
+}
+pre code{background:none;padding:0;border:0;font-size:inherit}
+
+/* ── Callout ─────────────────────────────────── */
+.callout{
+  margin:16px 0; padding:12px 16px;
+  border-left:3px solid var(--accent);
+  background:var(--accent-glow);
+  border-radius:0 6px 6px 0;
+  font-size:12.5px; line-height:1.6;
+  color:var(--text);
+}
+.callout.green{border-color:var(--green);background:var(--green-dim)}
+.callout.purple{border-color:var(--purple);background:var(--purple-dim)}
+.callout.orange{border-color:var(--orange);background:var(--orange-dim)}
+
+/* ── Product grid ────────────────────────────── */
+.product-grid{
+  display:grid; grid-template-columns:repeat(2,1fr);
+  gap:12px; margin:20px 0;
+}
+.product-card{
+  background:var(--surf); border:1px solid var(--border);
+  border-radius:8px; padding:16px 18px;
+  display:grid; gap:6px;
+}
+.product-card-badge{
+  font-family:var(--font-mono); font-size:10px; font-weight:700;
+  letter-spacing:.1em; text-transform:uppercase;
+  padding:2px 7px; border-radius:999px; display:inline-flex;
+  width:fit-content;
+}
+.pc-convoai .product-card-badge{background:var(--accent-dim);color:var(--accent)}
+.pc-rtc .product-card-badge{background:var(--green-dim);color:var(--green)}
+.pc-rtm .product-card-badge{background:var(--purple-dim);color:var(--purple)}
+.pc-token .product-card-badge{background:var(--orange-dim);color:var(--orange)}
+.product-card-name{font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--text)}
+.product-card-desc{font-size:12px;color:var(--muted);line-height:1.5}
+.product-card-ver{font-family:var(--font-mono);font-size:11px;color:var(--muted)}
+
+/* ── Diagram canvas ──────────────────────────── */
+.diagram-wrap{
+  margin:20px 0; border:1px solid var(--border);
+  border-radius:8px; overflow:hidden;
+  background:var(--surf);
+}
+.diagram-title{
+  font-family:var(--font-mono); font-size:11px; font-weight:700;
+  letter-spacing:.08em; text-transform:uppercase;
+  color:var(--muted); padding:10px 16px;
+  border-bottom:1px solid var(--border);
+  background:var(--surf2);
+}
+canvas{display:block; width:100%; height:auto}
+
+/* ── Sequence diagram ────────────────────────── */
+.seq{
+  font-size:11.5px; margin:20px 0;
+  border:1px solid var(--border); border-radius:8px; overflow:hidden;
+}
+.seq-title{
+  font-family:var(--font-mono); font-size:11px; font-weight:700;
+  letter-spacing:.08em; text-transform:uppercase;
+  color:var(--muted); padding:10px 16px;
+  background:var(--surf2); border-bottom:1px solid var(--border);
+}
+.seq-header{
+  display:grid; background:var(--surf);
+  border-bottom:2px solid var(--border);
+}
+.seq-col{
+  padding:8px 10px; text-align:center;
+  font-family:var(--font-mono); font-size:10px; font-weight:700;
+  letter-spacing:.06em; text-transform:uppercase;
+  border-right:1px solid var(--border);
+  line-height:1.3;
+}
+.seq-col:last-child{border-right:0}
+.seq-col.c-ext{color:var(--accent)}
+.seq-col.c-sdk{color:var(--orange)}
+.seq-col.c-api{color:var(--red)}
+.seq-col.c-rtm{color:var(--purple)}
+.seq-col.c-rtc{color:var(--green)}
+.seq-col.c-user{color:var(--muted)}
+.seq-col.c-browser{color:var(--green)}
+.seq-step{
+  display:grid; align-items:stretch;
+  border-bottom:1px solid var(--border);
+  min-height:36px;
+}
+.seq-step:last-child{border-bottom:0}
+.seq-step:hover{background:var(--accent-glow)}
+.seq-cell{
+  padding:7px 10px;
+  border-right:1px solid var(--border);
+  display:flex; align-items:center;
+  justify-content:center;
+  position:relative;
+  font-size:11px;
+}
+.seq-cell:last-child{border-right:0}
+.arrow-label{
+  font-family:var(--font-mono); font-size:10.5px;
+  text-align:center; line-height:1.4;
+  padding:2px 4px;
+}
+.arrow-right::after{content:' →'; color:var(--accent);font-weight:700}
+.arrow-left::before{content:'← '; color:var(--purple);font-weight:700}
+.arrow-self::after{content:' ↩'; color:var(--orange);font-weight:700}
+.note-row{
+  grid-column:1/-1; padding:6px 16px;
+  font-size:11px; color:var(--muted);
+  background:var(--surf2); border-bottom:1px solid var(--border);
+  font-style:italic;
+}
+.seq-span{
+  grid-column:1/-1; text-align:center;
+}
+
+/* ── State diagram ───────────────────────────── */
+.state-diagram{
+  display:flex; flex-direction:column; gap:0;
+  margin:20px 0; padding:24px 20px;
+  background:var(--surf); border:1px solid var(--border);
+  border-radius:8px;
+}
+.state-row{
+  display:flex; align-items:center; justify-content:center; gap:0;
+}
+.state-node{
+  padding:10px 20px; border-radius:6px;
+  font-family:var(--font-mono); font-size:12px; font-weight:700;
+  text-align:center; border:2px solid;
+  min-width:100px;
+}
+.state-idle{border-color:var(--border);color:var(--muted)}
+.state-starting{border-color:var(--orange);color:var(--orange);background:var(--orange-dim)}
+.state-live{border-color:var(--green);color:var(--green);background:var(--green-dim)}
+.state-error{border-color:var(--red);color:var(--red);background:var(--red-dim)}
+.state-arrow{
+  display:flex; flex-direction:column; align-items:center;
+  padding:0 12px; gap:2px; min-width:120px;
+}
+.state-arrow-label{
+  font-size:10px; color:var(--muted); font-family:var(--font-mono);
+  text-align:center; line-height:1.3;
+}
+.state-arrow-line{
+  font-size:16px; color:var(--border);
+}
+.state-arrow-down{
+  display:flex; flex-direction:column; align-items:center;
+  gap:2px; padding:4px 0;
+}
+
+/* ── Auth flow ───────────────────────────────── */
+.auth-flow{
+  display:flex; flex-direction:column; align-items:flex-start;
+  gap:0; margin:20px 0;
+}
+.af-node{
+  padding:10px 18px; border-radius:6px;
+  border:1.5px solid var(--border);
+  background:var(--surf); font-size:12.5px;
+  line-height:1.4; position:relative;
+}
+.af-diamond{
+  padding:10px 18px; border-radius:6px;
+  border:1.5px solid var(--accent); background:var(--accent-glow);
+  font-family:var(--font-mono); font-size:12px; font-weight:700;
+  color:var(--accent);
+}
+.af-connector{
+  width:2px; height:16px; background:var(--border);
+  margin-left:24px;
+}
+.af-branches{
+  display:flex; gap:40px; align-items:flex-start;
+  margin-left:20px;
+}
+.af-branch{display:flex; flex-direction:column; align-items:center; gap:0}
+.af-branch-label{
+  font-size:10px; font-family:var(--font-mono); color:var(--muted);
+  margin-bottom:4px;
+}
+.af-branch-connector{
+  width:2px; height:16px; background:var(--border);
+}
+.af-outcome{
+  padding:10px 16px; border-radius:6px;
+  border:1.5px solid var(--border); background:var(--surf);
+  font-size:11.5px; text-align:center; line-height:1.4;
+  font-family:var(--font-mono); max-width:180px;
+}
+
+/* ── Architecture diagram ────────────────────── */
+.arch-zones{
+  display:grid; gap:12px; margin:20px 0;
+}
+.arch-zone{
+  border:1px solid var(--border); border-radius:8px;
+  overflow:hidden;
+}
+.arch-zone-header{
+  font-family:var(--font-mono); font-size:10px; font-weight:700;
+  letter-spacing:.1em; text-transform:uppercase;
+  padding:6px 14px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:6px;
+}
+.arch-zone-header .dot{
+  width:8px; height:8px; border-radius:50%; flex-shrink:0;
+}
+.zone-host .arch-zone-header{background:rgba(41,191,255,.06); color:var(--accent)}
+.zone-host .dot{background:var(--accent)}
+.zone-webview .arch-zone-header{background:rgba(163,113,247,.06); color:var(--purple)}
+.zone-webview .dot{background:var(--purple)}
+.zone-browser .arch-zone-header{background:rgba(63,185,80,.06); color:var(--green)}
+.zone-browser .dot{background:var(--green)}
+.zone-cloud .arch-zone-header{background:rgba(248,81,73,.06); color:var(--red)}
+.zone-cloud .dot{background:var(--red)}
+.arch-zone-body{
+  display:flex; flex-wrap:wrap; gap:8px; padding:12px 14px;
+  background:var(--surf);
+}
+.arch-box{
+  padding:7px 12px; border-radius:5px;
+  border:1px solid var(--border); background:var(--surf2);
+  font-family:var(--font-mono); font-size:11px; font-weight:600;
+  line-height:1.3; color:var(--text);
+}
+.arch-box.accent{border-color:var(--accent-dim);background:var(--accent-glow);color:var(--accent)}
+.arch-box.purple{border-color:var(--purple-dim);background:var(--purple-dim);color:var(--purple)}
+.arch-box.green{border-color:var(--green-dim);background:var(--green-dim);color:var(--green)}
+.arch-box.red{border-color:var(--red-dim);background:var(--red-dim);color:var(--red)}
+.arch-box.orange{border-color:var(--orange-dim);background:var(--orange-dim);color:var(--orange)}
+.arch-arrows{
+  display:flex; flex-direction:column; gap:6px;
+  padding:10px 14px; border-top:1px solid var(--border);
+  background:var(--surf2);
+}
+.arch-arrow{
+  display:flex; align-items:center; gap:8px;
+  font-size:11.5px; line-height:1.4;
+}
+.arch-arrow-icon{
+  font-size:13px; flex-shrink:0;
+}
+.arch-arrow code{font-size:10.5px}
+
+/* ── Provider tables ─────────────────────────── */
+.provider-grid{
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
+  gap:6px; margin:12px 0;
+}
+.provider-chip{
+  padding:5px 10px; border-radius:5px;
+  border:1px solid var(--border); background:var(--surf);
+  font-family:var(--font-mono); font-size:11px;
+  text-align:center; color:var(--text);
+}
+.provider-chip.default{
+  border-color:var(--accent-dim); background:var(--accent-glow);
+  color:var(--accent); font-weight:700;
+}
+
+/* ── File map ────────────────────────────────── */
+.file-map{
+  display:grid; gap:6px; margin:16px 0;
+}
+.file-row{
+  display:grid; grid-template-columns:220px 1fr;
+  gap:12px; padding:10px 14px;
+  background:var(--surf); border:1px solid var(--border);
+  border-radius:6px; align-items:start;
+  font-size:12px; line-height:1.5;
+}
+.file-path{font-family:var(--font-mono);font-size:11px;color:var(--accent)}
+.file-desc{color:var(--muted)}
+
+/* ── Section spacer ──────────────────────────── */
+.section{padding-bottom:8px}
+</style>
+
+<button class="theme-btn" id="theme-btn" aria-label="Toggle theme">◐</button>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-logo">
+      <svg viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M24.9924 36.0241C22.81 36.0241 20.6766 35.3775 18.862 34.1662C17.0474 32.9548 15.6331 31.2331 14.798 29.2187C13.9628 27.2043 13.7443 24.9878 14.17 22.8493C14.5958 20.7109 15.6467 18.7466 17.1899 17.2048C18.7331 15.6631 20.6992 14.6131 22.8397 14.1878C24.9802 13.7624 27.1988 13.9807 29.2151 14.8151C31.2314 15.6495 32.9547 17.0625 34.1672 18.8754C35.3797 20.6883 36.0268 22.8196 36.0268 25C36.0239 27.9229 34.8604 30.7251 32.7917 32.7919C30.7229 34.8587 27.918 36.0211 24.9924 36.0241ZM37.8416 8.93956L37.6736 9.1634L37.5056 9.38724L37.2815 9.21936L37.0687 9.05148C34.5373 7.14076 31.5875 5.85883 28.4626 5.31148C25.3376 4.76414 22.1272 4.96708 19.0963 5.90355C16.0653 6.84003 13.3007 8.48318 11.0306 10.6974C8.76056 12.9117 7.05008 15.6335 6.04036 18.6383C5.03063 21.6431 4.75062 24.8447 5.22343 27.9789C5.69624 31.1131 6.90831 34.0901 8.75962 36.6641C10.6109 39.2381 13.0484 41.3354 15.8708 42.7828C18.6933 44.2303 21.8198 44.9864 24.9924 44.9888C29.356 45.0014 33.6015 43.5732 37.0687 40.9261L37.2815 40.7694L37.5056 40.5904L37.6736 40.8254L37.8416 41.0492C38.5966 42.0901 39.5544 42.9677 40.6575 43.6293C41.7606 44.2909 42.9862 44.7229 44.2606 44.8993L45 45V5L44.2606 5.10073C42.9873 5.27635 41.7624 5.70686 40.6595 6.36647C39.5565 7.02608 38.5981 7.90124 37.8416 8.93956Z" fill="#00C2FF"/>
+      </svg>
+      <span class="nav-logo-text">Agora Mentor</span>
+    </div>
+    <div class="nav-version">v0.1.2 · Integration Ref</div>
+  </div>
+  <div class="nav-group-label">Overview</div>
+  <a href="#products">Agora Products</a>
+  <a href="#architecture">Architecture</a>
+  <a href="#auth">Authentication</a>
+  <a href="#config">Configuration</a>
+  <div class="nav-group-label">Session Modes</div>
+  <a href="#modes">Mode Overview</a>
+  <a href="#voice-flow">Voice Mode Flow</a>
+  <a href="#chat-flow">Chat Mode Flow</a>
+  <div class="nav-group-label">API Reference</div>
+  <a href="#convoai-api">ConvoAI REST APIs</a>
+  <a href="#token-api">Token Builder APIs</a>
+  <a href="#rtc-api">RTC Web SDK APIs</a>
+  <a href="#rtm-api">RTM Web SDK APIs</a>
+  <a href="#tokens">Token Details</a>
+  <div class="nav-group-label">Providers</div>
+  <a href="#providers">Provider Stacks</a>
+  <a href="#lifecycle">Session Lifecycle</a>
+  <a href="#files">File Map</a>
+  <a href="#decisions">Design Decisions</a>
+  <div class="nav-group-label">Cost</div>
+  <a href="#pricing">Pricing Guide</a>
+</nav>
+
+<main>
+  <div class="page-header">
+    <div class="page-eyebrow">Technical Integration Reference</div>
+    <h1>How Agora is Used in<br>Agora Mentor</h1>
+    <p style="margin-top:12px;color:var(--muted)">Complete documentation of every Agora product, SDK, API call, and data flow — for both voice and text chat modes.</p>
+    <div class="page-meta">
+      <span class="badge accent">agora-agents@2.4.0</span>
+      <span class="badge accent">agora-token@2.0.5</span>
+      <span class="badge">AgoraRTC_N.js@4.20.2</span>
+      <span class="badge">agora-rtm@2.2.3</span>
+    </div>
+  </div>
+
+  <!-- ── 1. PRODUCTS ──────────────────────────── -->
+  <div class="section" id="products">
+    <h2>§1 · Agora Products Used</h2>
+    <p>The extension uses four distinct Agora products. Each operates in a different runtime and serves a specific role:</p>
+
+    <div class="product-grid">
+      <div class="product-card pc-convoai">
+        <span class="product-card-badge">ConvoAI</span>
+        <div class="product-card-name">Conversational AI</div>
+        <div class="product-card-desc">Orchestrates the full STT→LLM→TTS pipeline. Hosts the AI agent in Agora's cloud. Called from the Node.js extension host via REST.</div>
+        <div class="product-card-ver">agora-agents SDK · npm · Node.js only</div>
+      </div>
+      <div class="product-card pc-rtc">
+        <span class="product-card-badge">RTC</span>
+        <div class="product-card-name">Real-Time Communication</div>
+        <div class="product-card-desc">Carries the audio channel: mic capture from the browser companion, and agent voice playback. Browser API — requires a real browser tab.</div>
+        <div class="product-card-ver">AgoraRTC_N.js · browser companion only</div>
+      </div>
+      <div class="product-card pc-rtm">
+        <span class="product-card-badge">RTM</span>
+        <div class="product-card-name">Real-Time Messaging</div>
+        <div class="product-card-desc">Delivers structured transcript events (user.transcription / assistant.transcription) to both the VS Code sidebar and the browser companion.</div>
+        <div class="product-card-ver">agora-rtm.js · sidebar + companion</div>
+      </div>
+      <div class="product-card pc-token">
+        <span class="product-card-badge">Token</span>
+        <div class="product-card-name">Token Builder</div>
+        <div class="product-card-desc">Generates RTC (AccessToken2) and RTM (AccessToken v1) tokens locally in Node.js. No network call — uses appId + appCertificate to sign tokens.</div>
+        <div class="product-card-ver">agora-token · npm · Node.js only</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 2. ARCHITECTURE ──────────────────────── -->
+  <div class="section" id="architecture">
+    <h2>§2 · Architecture Overview</h2>
+    <p>Four runtime zones communicate through a message-passing bridge. The App Certificate <strong>never leaves the extension host</strong> — only minted tokens reach the browser.</p>
+
+    <div class="arch-zones">
+      <div class="arch-zone zone-host">
+        <div class="arch-zone-header"><span class="dot"></span>VS Code Extension Host · Node.js</div>
+        <div class="arch-zone-body">
+          <div class="arch-box accent">extension.ts<br><small>Commands · Panel · Bridge</small></div>
+          <div class="arch-box accent">backend.ts<br><small>AgoraBackendClient</small></div>
+          <div class="arch-box orange">agora-agents SDK<br><small>AgoraClient · Agent · Session</small></div>
+          <div class="arch-box orange">agora-token<br><small>RtcTokenBuilder · RtmTokenBuilder</small></div>
+        </div>
+        <div class="arch-arrows">
+          <div class="arch-arrow"><span class="arch-arrow-icon">→</span><span>Sends <code>session-live</code> (appId, channel, tokens) to Webview via postMessage</span></div>
+          <div class="arch-arrow"><span class="arch-arrow-icon">→</span><span>Writes companion HTML to <code>os.tmpdir()</code> and calls <code>openExternal()</code></span></div>
+          <div class="arch-arrow"><span class="arch-arrow-icon">→</span><span>Calls ConvoAI REST <code>POST /agents/join</code> via agora-agents SDK</span></div>
+        </div>
+      </div>
+
+      <div class="arch-zone zone-webview">
+        <div class="arch-zone-header"><span class="dot"></span>Webview Sidebar · Browser Sandbox (VS Code)</div>
+        <div class="arch-zone-body">
+          <div class="arch-box purple">webview.ts HTML/JS<br><small>UI · State · Chat Input</small></div>
+          <div class="arch-box purple">AgoraRTM Client<br><small>Transcript only · uid=1</small></div>
+        </div>
+        <div class="arch-arrows">
+          <div class="arch-arrow"><span class="arch-arrow-icon">↔</span><span>postMessage bridge with extension host (start-session, stop-session, chat-message)</span></div>
+          <div class="arch-arrow"><span class="arch-arrow-icon">→</span><span>RTM: <code>login → subscribe(channel) → addEventListener('message')</code></span></div>
+        </div>
+      </div>
+
+      <div class="arch-zone zone-browser">
+        <div class="arch-zone-header"><span class="dot"></span>Browser Companion · System Browser Tab (Voice mode only)</div>
+        <div class="arch-zone-body">
+          <div class="arch-box green">AgoraRTC Client<br><small>Mic capture · Agent audio</small></div>
+          <div class="arch-box green">AgoraRTM Client<br><small>Transcript fallback · uid=1</small></div>
+          <div class="arch-box">Stop via REST<br><small>keepalive fetch on unload</small></div>
+        </div>
+        <div class="arch-arrows">
+          <div class="arch-arrow"><span class="arch-arrow-icon">→</span><span>RTC: <code>join(appId, channel, clientToken, 1)</code> + publishes microphone audio</span></div>
+          <div class="arch-arrow"><span class="arch-arrow-icon">←</span><span>RTC: receives agent audio track → plays through speakers</span></div>
+        </div>
+      </div>
+
+      <div class="arch-zone zone-cloud">
+        <div class="arch-zone-header"><span class="dot"></span>Agora Cloud</div>
+        <div class="arch-zone-body">
+          <div class="arch-box red">ConvoAI Agent<br><small>STT → LLM → TTS</small></div>
+          <div class="arch-box red">RTC Channel<br><small>Audio transport</small></div>
+          <div class="arch-box red">RTM Channel<br><small>Transcript events</small></div>
+        </div>
+        <div class="arch-arrows">
+          <div class="arch-arrow"><span class="arch-arrow-icon">↔</span><span>Agent publishes synthesized voice audio into the RTC channel</span></div>
+          <div class="arch-arrow"><span class="arch-arrow-icon">→</span><span>Agent emits <code>assistant.transcription</code> and <code>user.transcription</code> JSON to RTM channel</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 3. AUTH ──────────────────────────────── -->
+  <div class="section" id="auth">
+    <h2>§3 · Authentication</h2>
+    <p>Two auth modes are supported for the ConvoAI REST API. The mode is chosen automatically at session start:</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0">
+      <div class="callout">
+        <strong>Token Auth (default)</strong><br>
+        Uses <code>appId</code> + <code>appCertificate</code> only. The <code>agora-agents</code> SDK derives a ConvoAI token internally. No additional credentials needed.
+      </div>
+      <div class="callout green">
+        <strong>Basic Auth (preferred)</strong><br>
+        Requires <code>customerId</code> + <code>customerSecret</code> from Agora Console → RESTful API keys. Sent as <code>Authorization: Basic base64(id:secret)</code> on every ConvoAI request.
+      </div>
+    </div>
+
+    <div style="background:var(--surf);border:1px solid var(--border);border-radius:8px;padding:20px;margin:16px 0">
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px">Decision tree — how auth mode is selected</div>
+      <div style="display:flex;flex-direction:column;gap:0;align-items:flex-start">
+        <div style="padding:9px 16px;border-radius:6px;border:1.5px solid var(--accent);background:var(--accent-glow);font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--accent)">startSession() called</div>
+        <div style="width:2px;height:16px;background:var(--border);margin-left:20px"></div>
+        <div style="padding:9px 16px;border-radius:6px;border:1.5px solid var(--orange);background:var(--orange-dim);font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--orange)">customerId && customerSecret set?</div>
+        <div style="display:flex;gap:60px;margin-top:0;margin-left:10px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0">
+            <div style="width:2px;height:16px;background:var(--border)"></div>
+            <div style="font-size:10px;font-family:var(--font-mono);color:var(--green);margin-bottom:4px">YES</div>
+            <div style="padding:9px 14px;border-radius:6px;border:1.5px solid var(--green);background:var(--green-dim);font-family:var(--font-mono);font-size:11px;color:var(--green);font-weight:700;text-align:center;max-width:160px">new AgoraClient<br>customerId + customerSecret<br>Basic Auth header</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0">
+            <div style="width:2px;height:16px;background:var(--border)"></div>
+            <div style="font-size:10px;font-family:var(--font-mono);color:var(--muted);margin-bottom:4px">NO</div>
+            <div style="padding:9px 14px;border-radius:6px;border:1.5px solid var(--border);background:var(--surf2);font-family:var(--font-mono);font-size:11px;color:var(--muted);font-weight:700;text-align:center;max-width:160px">new AgoraClient<br>appId + appCertificate<br>Token Auth</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout orange">
+      <strong>Security note:</strong> The browser companion receives a pre-computed <code>stopAuth</code> value (base64 of id:secret) so it can call the stop endpoint on page unload, but <code>appCertificate</code> is never sent to any browser context.
+    </div>
+  </div>
+
+  <!-- ── 4. CONFIG ────────────────────────────── -->
+  <div class="section" id="config">
+    <h2>§4 · VS Code Configuration</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Setting</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>agoraMentor.appId</code></td><td>string</td><td><code>""</code></td><td>32-char hex Agora App ID</td></tr>
+          <tr><td><code>agoraMentor.appCertificate</code></td><td>string</td><td><code>""</code></td><td>32-char hex App Certificate · validated with <code>/^[0-9a-f]{32}$/i</code> before any call · never sent to browser</td></tr>
+          <tr><td><code>agoraMentor.agentUid</code></td><td>string</td><td><code>"123456"</code></td><td>RTC UID reserved for the AI agent · must be different from client UID (1)</td></tr>
+          <tr><td><code>agoraMentor.geofence</code></td><td>string</td><td><code>"us"</code></td><td>ConvoAI routing area: <code>us</code> / <code>eu</code> / <code>ap</code> / <code>cn</code> → maps to <code>Area.US/EU/AP/CN</code> in SDK</td></tr>
+          <tr><td><code>agoraMentor.customerId</code></td><td>string</td><td><code>""</code></td><td>Optional · Agora Console RESTful API Customer ID · enables Basic Auth when set</td></tr>
+          <tr><td><code>agoraMentor.customerSecret</code></td><td>string</td><td><code>""</code></td><td>Optional · Agora Console RESTful API Customer Secret</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── 5. MODES ─────────────────────────────── -->
+  <div class="section" id="modes">
+    <h2>§5 · Session Modes</h2>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:16px 0">
+      <div style="background:var(--surf);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Cascading Voice</div>
+        <div style="font-size:12.5px;color:var(--muted);line-height:1.6">Three swappable providers: STT → LLM → TTS. Audio over RTC. Transcripts via RTM. Mic in browser companion.<br><br><code style="font-size:10.5px">idleTimeout: 30</code></div>
+      </div>
+      <div style="background:var(--surf);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--orange);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Realtime Speech</div>
+        <div style="font-size:12.5px;color:var(--muted);line-height:1.6">Single MLLM (e.g. OpenAI Realtime API or Gemini Live) handles STT+LLM+TTS internally. Same RTC+RTM transport.<br><br><code style="font-size:10.5px">idleTimeout: 30</code></div>
+      </div>
+      <div style="background:var(--surf);border:1px solid var(--border);border-radius:8px;padding:16px">
+        <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--purple);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Text Chat</div>
+        <div style="font-size:12.5px;color:var(--muted);line-height:1.6">No mic, no audio. User types in sidebar. <code>session.think()</code> injects text into LLM. Responses via RTM. No browser companion.<br><br><code style="font-size:10.5px">idleTimeout: 0</code></div>
+      </div>
+    </div>
+
+    <p>In all modes, the Agent is configured with <code>advancedFeatures: { enable_rtm: true }</code> and <code>parameters: { data_channel: 'rtm', enable_error_message: true, enable_metrics: true }</code>.</p>
+  </div>
+
+  <!-- ── 6. VOICE FLOW ────────────────────────── -->
+  <div class="section" id="voice-flow">
+    <h2>§6 · Voice Mode — Full API Call Sequence</h2>
+
+    <div class="seq">
+      <div class="seq-title">Voice Session · Start → Speak → Stop</div>
+      <div class="seq-header" style="grid-template-columns:repeat(7,1fr)">
+        <div class="seq-col c-user">User</div>
+        <div class="seq-col c-ext">extension.ts</div>
+        <div class="seq-col c-ext">backend.ts</div>
+        <div class="seq-col c-sdk">agora-agents</div>
+        <div class="seq-col c-api">ConvoAI REST</div>
+        <div class="seq-col c-rtm">RTM</div>
+        <div class="seq-col c-browser">Browser Companion</div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(7,1fr)">
+        <div class="seq-cell" style="grid-column:1/3"><span class="arrow-label arrow-right" style="color:var(--muted)">Click "Open Mic in Browser"</span></div>
+        <div class="seq-cell" style="grid-column:3/8"></div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(7,1fr)">
+        <div class="seq-cell"></div>
+        <div class="seq-cell" style="grid-column:2/4"><span class="arrow-label arrow-right">postMessage {start-session, mode:'voice'}</span></div>
+        <div class="seq-cell" style="grid-column:4/8"></div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(7,1fr)">
+        <div class="seq-cell"></div>
+        <div class="seq-cell"><span class="arrow-label" style="color:var(--muted);font-size:10px">makeClient()<br>assertConfig()</span></div>
+        <div class="seq-cell" style="grid-column:3/4"><span class="arrow-label arrow-right">startSession(prompt, context, cfg, false)</span></div>
+        <div class="seq-cell" style="grid-column:4/8"></div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(7,1fr)">
+        <div class="seq-cell" style="grid-column:1/3"></div>
+        <div class="seq-cell"><span class="arrow-label" style="color:var(--muted);font-size:10px">new AgoraClient<br>new Agent<br>.withStt().withLlm().withTts()</span></div>
+        <div class="seq-cell"><span class="arrow-label arrow-right">createSession({channel, agentUid, idleTimeout:30})</span></div>
+        <div class="seq-cell" style="grid-column:5/8"></div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(7,1fr)">
+        <div class="seq-cell" style="grid-column:1/4"></div>
+        <div class="seq-cell"><span class="arrow-label arrow-right" style="color:var(--orange)">session.start()</span></div>
+        <div class="seq-cell" style="background:var(--red-dim)"><span class="arrow-label" style="color:var(--red);font-weight:700">POST /agents/join</span></div>
+        <div class="seq-cell" style="grid-column:6/8"></div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(7,1fr)">
+        <div class="seq-cell" style="grid-column:1/4"></div>
+        <div class="seq-cell"><span class="arrow-label arrow-left" style="color:var(--orange)">{agentId}</span></div>
+        <div class="seq-cell" style="background:var(--red-dim)"><span class="arrow-label" style="color:var(--red)">← {agentId}</span></div>
+        <div class="seq-cell" style="grid-column:6/8"></div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(7,1fr)">
+        <div class="seq-cell" style="grid-column:1/3"></div>
+        <div class="seq-cell"><span class="arrow-label" style="color:var(--orange);font-size:10px">RtcTokenBuilder.buildTokenWithRtm()<br>RtmTokenBuilder.buildToken()<br>(local — no network)</span></div>
+        <div class="seq-cell" style="grid-column:4/8"></div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(7,1fr)">
+        <div class="seq-cell"></div>
+        <div class="seq-cell"><span class="arrow-label arrow-left">session-live {appId, channel, clientToken, rtmToken, stopUrl}</span></div>
+        <div class="seq-cell" style="grid-column:3/8"></div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(7,1fr)">
+        <div class="seq-cell"></div>
+        <div class="seq-cell"><span class="arrow-label" style="font-size:10px;color:var(--muted)">writes HTML → os.tmpdir()<br>openExternal() → system browser</span></div>
+        <div class="seq-cell" style="grid-column:3/7"></div>
+        <div class="seq-cell"><span class="arrow-label" style="font-size:10px;color:var(--green)">browser tab opens</span></div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(7,1fr)">
+        <div class="seq-cell" style="grid-column:1/6"><span class="arrow-label" style="color:var(--muted);font-style:italic">Sidebar also joins RTM: new AgoraRTM.RTM(appId, "1") → login(rtmToken) → subscribe(channel)</span></div>
+        <div class="seq-cell"><span class="arrow-label" style="color:var(--purple)">RTM login → subscribe</span></div>
+        <div class="seq-cell"></div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(7,1fr)">
+        <div class="seq-cell" style="grid-column:1/7"></div>
+        <div class="seq-cell"><span class="arrow-label" style="font-size:10px;color:var(--green)">User clicks "Join Session"<br>AgoraRTC.resumeAudioContext()</span></div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(7,1fr)">
+        <div class="seq-cell" style="grid-column:1/7"></div>
+        <div class="seq-cell"><span class="arrow-label" style="font-size:10px;color:var(--green)">createClient({rtc,vp8})<br>client.join(appId,channel,token,1)<br>createMicrophoneAudioTrack()<br>client.publish(micTrack)</span></div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(7,1fr)">
+        <div class="seq-cell" style="grid-column:1/7"></div>
+        <div class="seq-cell"><span class="arrow-label" style="font-size:10px;color:var(--green)">RTM login(rtmToken)<br>subscribe(channel)</span></div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(7,1fr)">
+        <div class="seq-cell" style="grid-column:1/5"></div>
+        <div class="seq-cell" style="background:var(--red-dim)"><span class="arrow-label" style="color:var(--red);font-size:10px">Agent hears mic audio<br>STT→LLM→TTS pipeline runs</span></div>
+        <div class="seq-cell"></div>
+        <div class="seq-cell"></div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(7,1fr)">
+        <div class="seq-cell" style="grid-column:1/5"></div>
+        <div class="seq-cell" style="background:var(--red-dim)"><span class="arrow-label" style="color:var(--red);font-size:10px">→ emits assistant.transcription<br>→ publishes voice audio to RTC</span></div>
+        <div class="seq-cell"><span class="arrow-label" style="color:var(--purple);font-size:10px">message event → appendTranscript()</span></div>
+        <div class="seq-cell"><span class="arrow-label" style="color:var(--green);font-size:10px">RTM message + user-published → audioTrack.play()</span></div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(7,1fr)">
+        <div class="seq-cell"><span class="arrow-label" style="color:var(--muted)">Click Stop</span></div>
+        <div class="seq-cell" style="grid-column:2/3"><span class="arrow-label" style="font-size:10px;color:var(--muted)">postMessage stop-session<br>RTM logout</span></div>
+        <div class="seq-cell"><span class="arrow-label arrow-right" style="font-size:10px">stopSession(agentId)</span></div>
+        <div class="seq-cell"><span class="arrow-label arrow-right" style="font-size:10px;color:var(--orange)">stopAgent(agentId)</span></div>
+        <div class="seq-cell" style="background:var(--red-dim)"><span class="arrow-label" style="color:var(--red)">POST /agents/{id}/leave</span></div>
+        <div class="seq-cell"></div>
+        <div class="seq-cell"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 7. CHAT FLOW ─────────────────────────── -->
+  <div class="section" id="chat-flow">
+    <h2>§7 · Chat Mode — Full API Call Sequence</h2>
+
+    <div class="seq">
+      <div class="seq-title">Chat Session · Start → Type Message → Stop</div>
+      <div class="seq-header" style="grid-template-columns:repeat(6,1fr)">
+        <div class="seq-col c-user">User</div>
+        <div class="seq-col c-ext">extension.ts</div>
+        <div class="seq-col c-ext">backend.ts</div>
+        <div class="seq-col c-sdk">agora-agents</div>
+        <div class="seq-col c-api">ConvoAI REST</div>
+        <div class="seq-col c-rtm">RTM Channel</div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(6,1fr)">
+        <div class="seq-cell"><span class="arrow-label" style="color:var(--muted)">Click "Open Chat"</span></div>
+        <div class="seq-cell"><span class="arrow-label arrow-right" style="font-size:10px">postMessage {start-session, mode:'chat'}</span></div>
+        <div class="seq-cell" style="grid-column:3/7"></div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(6,1fr)">
+        <div class="seq-cell"></div>
+        <div class="seq-cell"><span class="arrow-label arrow-right">startSession(prompt, ctx, cfg, chatMode=true)</span></div>
+        <div class="seq-cell" style="grid-column:3/7"></div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(6,1fr)">
+        <div class="seq-cell" style="grid-column:1/3"></div>
+        <div class="seq-cell"><span class="arrow-label" style="font-size:10px;color:var(--muted)">new Agent + providers<br>createSession({idleTimeout: 0})</span></div>
+        <div class="seq-cell"><span class="arrow-label arrow-right" style="color:var(--orange)">session.start()</span></div>
+        <div class="seq-cell" style="background:var(--red-dim)"><span class="arrow-label" style="color:var(--red);font-weight:700">POST /agents/join</span></div>
+        <div class="seq-cell"></div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(6,1fr)">
+        <div class="seq-cell"></div>
+        <div class="seq-cell"><span class="arrow-label arrow-left" style="font-size:10px">session-live (no openExternal — no browser companion)</span></div>
+        <div class="seq-cell" style="grid-column:3/7"></div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(6,1fr)">
+        <div class="seq-cell" style="grid-column:1/5"></div>
+        <div class="seq-cell"></div>
+        <div class="seq-cell"><span class="arrow-label" style="font-size:10px;color:var(--purple)">Sidebar: RTM login<br>→ subscribe(channel)</span></div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(6,1fr)">
+        <div class="seq-cell"><span class="arrow-label" style="color:var(--muted)">Types message<br>presses Enter</span></div>
+        <div class="seq-cell"><span class="arrow-label arrow-right" style="font-size:10px">postMessage {chat-message, text}</span></div>
+        <div class="seq-cell" style="grid-column:3/7"></div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(6,1fr)">
+        <div class="seq-cell"></div>
+        <div class="seq-cell"><span class="arrow-label arrow-right" style="font-size:10px">sendChatMessage(text)</span></div>
+        <div class="seq-cell" style="grid-column:3/7"></div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(6,1fr)">
+        <div class="seq-cell" style="grid-column:1/3"></div>
+        <div class="seq-cell"><span class="arrow-label arrow-right" style="color:var(--orange)">session.think(text, {on_listening_action:'inject', on_thinking_action:'interrupt'})</span></div>
+        <div class="seq-cell"><span class="arrow-label arrow-right" style="color:var(--orange)">→ SDK call</span></div>
+        <div class="seq-cell" style="background:var(--red-dim)"><span class="arrow-label" style="color:var(--red);font-weight:700">POST /agents/{id}/interrupt</span></div>
+        <div class="seq-cell"></div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(6,1fr)">
+        <div class="seq-cell" style="grid-column:1/5"></div>
+        <div class="seq-cell" style="background:var(--red-dim)"><span class="arrow-label" style="color:var(--red);font-size:10px">Injects text as user input<br>Emits user.transcription</span></div>
+        <div class="seq-cell"><span class="arrow-label" style="color:var(--purple);font-size:10px">← {user.transcription, final:true} → appendTranscript('user')</span></div>
+      </div>
+
+      <div class="seq-step" style="grid-template-columns:repeat(6,1fr)">
+        <div class="seq-cell" style="grid-column:1/5"></div>
+        <div class="seq-cell" style="background:var(--red-dim)"><span class="arrow-label" style="color:var(--red);font-size:10px">LLM generates response<br>TTS converts (not played)<br>Streams assistant.transcription events</span></div>
+        <div class="seq-cell"><span class="arrow-label" style="color:var(--purple);font-size:10px">← streaming chunks (final:false)<br>← final event (final:true)</span></div>
+      </div>
+    </div>
+
+    <div class="callout purple" style="margin-top:16px">
+      <strong>No audio in chat mode.</strong> Even though the ConvoAI agent runs TTS internally, the browser companion is never opened, so the synthesized audio is never played. Only the RTM transcript events are consumed.
+    </div>
+  </div>
+
+  <!-- ── 8. ConvoAI REST APIs ─────────────────── -->
+  <div class="section" id="convoai-api">
+    <h2>§8 · ConvoAI REST APIs (agora-agents SDK)</h2>
+    <p>All ConvoAI calls originate from the Node.js extension host via the <code>agora-agents</code> SDK. The SDK wraps the REST endpoints shown below.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>When</th><th>SDK Call</th><th>HTTP Method + URL</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Start session</td>
+            <td><code>session.start()</code></td>
+            <td><code>POST .../v2/projects/{appId}/agents/join</code></td>
+            <td>Returns <code>agentId</code>. Payload includes: STT/LLM/TTS config, channel, agentUid, remoteUids, idleTimeout, RTM flag, audio_scenario</td>
+          </tr>
+          <tr>
+            <td>Stop session (ext host)</td>
+            <td><code>client.stopAgent(agentId)</code></td>
+            <td><code>POST .../v2/projects/{appId}/agents/{agentId}/leave</code></td>
+            <td>Called on user Stop button or chat 404 error</td>
+          </tr>
+          <tr>
+            <td>Send chat message</td>
+            <td><code>session.think(text, options)</code></td>
+            <td><code>POST .../v2/projects/{appId}/agents/{agentId}/interrupt</code></td>
+            <td>SDK handles ConvoAI token auth internally. Options: <code>on_listening_action:'inject'</code>, <code>on_thinking_action:'interrupt'</code>, <code>on_speaking_action:'ignore'</code>, <code>interruptable:true</code></td>
+          </tr>
+          <tr>
+            <td>Stop (browser unload)</td>
+            <td>Direct <code>fetch()</code> with <code>keepalive:true</code></td>
+            <td><code>POST {stopUrl}</code> (same /leave endpoint)</td>
+            <td>Pre-computed <code>stopUrl</code> + <code>stopAuth</code> sent to companion at session start. Fires even on tab close.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Channel Name Format</h3>
+    <pre><code>mentor-{Date.now()}-{Math.random().toString(36).slice(2,8)}
+// e.g. mentor-1720790400123-ab3xyz</code></pre>
+
+    <h3>Agent Parameters (always set)</h3>
+    <pre><code>{
+  instructions: "&lt;system prompt with selected code context&gt;",
+  greeting:     "Hi! I'm your Agora Mentor. Let's look at {fileName}.",
+  failureMessage: "Please wait a moment.",
+  maxHistory:   15,
+  advancedFeatures: { enable_rtm: true },       // RTM transcript delivery
+  parameters: {
+    audio_scenario:       'chorus',
+    data_channel:         'rtm',                  // route transcripts via RTM
+    enable_error_message: true,
+    enable_metrics:       true,
+  },
+  // Session options:
+  agentUid:    config.agentUid,                   // default "123456"
+  remoteUids:  ["1"],                             // client UID
+  idleTimeout: chatMode ? 0 : 30,                 // 0 = never auto-stop
+  expiresIn:   ExpiresIn.seconds(3600),
+}</code></pre>
+  </div>
+
+  <!-- ── 9. TOKEN APIs ─────────────────────────── -->
+  <div class="section" id="token-api">
+    <h2>§9 · Token Builder APIs (agora-token — local, no network)</h2>
+    <p>Called once during <code>startSession()</code> after the ConvoAI agent is created. Both calls are synchronous and local.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Token Type</th><th>Builder Call</th><th>Format</th><th>Expires</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>RTC Client Token</strong></td>
+            <td><code>RtcTokenBuilder.buildTokenWithRtm(appId, cert, channel, "1", RtcRole.PUBLISHER, 3600, 3600)</code></td>
+            <td>AccessToken2 (includes RTM privileges)</td>
+            <td>3600 seconds (duration)</td>
+          </tr>
+          <tr>
+            <td><strong>RTM Token</strong></td>
+            <td><code>RtmTokenBuilder.buildToken(appId, cert, "1", Math.floor(Date.now()/1000) + 3600)</code></td>
+            <td>AccessToken v1</td>
+            <td>Absolute Unix timestamp (+3600s)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout orange">
+      RTM token generation is wrapped in a <code>try/catch</code> — if it fails, the sidebar falls back to receiving transcripts via the RTC <code>stream-message</code> data channel instead.
+    </div>
+  </div>
+
+  <!-- ── 10. RTC APIs ──────────────────────────── -->
+  <div class="section" id="rtc-api">
+    <h2>§10 · Agora RTC Web SDK APIs (Browser Companion only)</h2>
+    <p>All RTC calls happen in the browser companion tab. The VS Code webview never joins RTC.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>When</th><th>API Call</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Join click</td>
+            <td><code>AgoraRTC.resumeAudioContext()</code></td>
+            <td>Unlocks Web Audio API inside the click handler — required by browser autoplay policy</td>
+          </tr>
+          <tr>
+            <td>Join</td>
+            <td><code>AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' })</code></td>
+            <td>Creates the RTC client instance</td>
+          </tr>
+          <tr>
+            <td>Join</td>
+            <td><code>AgoraRTC.setLogLevel(4)</code></td>
+            <td>Suppresses SDK logs in production</td>
+          </tr>
+          <tr>
+            <td>Join</td>
+            <td><code>client.join(appId, channel, clientToken, 1)</code></td>
+            <td>Joins as UID=1 with the minted RTC client token</td>
+          </tr>
+          <tr>
+            <td>Join</td>
+            <td><code>AgoraRTC.createMicrophoneAudioTrack({ encoderConfig: 'speech_low_quality' })</code></td>
+            <td>Captures microphone; low quality codec optimized for speech</td>
+          </tr>
+          <tr>
+            <td>Join</td>
+            <td><code>client.publish(micTrack)</code></td>
+            <td>Publishes mic audio into the channel so the agent can hear it</td>
+          </tr>
+          <tr>
+            <td>Agent speaks</td>
+            <td><code>client.subscribe(user, 'audio')</code></td>
+            <td>Triggered by <code>user-published</code> event from agent UID</td>
+          </tr>
+          <tr>
+            <td>Agent speaks</td>
+            <td><code>user.audioTrack.play()</code></td>
+            <td>Plays agent voice through system speakers</td>
+          </tr>
+          <tr>
+            <td>Volume meter</td>
+            <td><code>micTrack.getVolumeLevel()</code></td>
+            <td>Called every 100ms via <code>setInterval</code> to animate the volume bar</td>
+          </tr>
+          <tr>
+            <td>Mute</td>
+            <td><code>micTrack.setEnabled(false / true)</code></td>
+            <td>Mutes/unmutes without leaving the channel</td>
+          </tr>
+          <tr>
+            <td>Page unload</td>
+            <td><code>micTrack.stop(); micTrack.close(); client.leave()</code></td>
+            <td>Cleans up RTC resources before the tab closes</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>RTC Client Events</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Event</th><th>Handler Action</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>user-published</code></td>
+            <td><code>client.subscribe(user, mediaType)</code> → if audio: save ref + <code>audioTrack.play()</code></td>
+          </tr>
+          <tr>
+            <td><code>user-left</code></td>
+            <td>If <code>user.uid === agentUid</code>: show "Session ended by VS Code" and disable controls</td>
+          </tr>
+          <tr>
+            <td><code>stream-message</code></td>
+            <td>Receives chunked transcript packets as fallback when RTM is unavailable (see §12)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── 11. RTM APIs ──────────────────────────── -->
+  <div class="section" id="rtm-api">
+    <h2>§11 · Agora RTM Web SDK APIs (Sidebar + Companion)</h2>
+    <p>RTM is used in <strong>both</strong> the webview sidebar and the browser companion. The webview uses RTM as its only Agora connection — no RTC. Both use the same client UID (<code>1</code>) and channel.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>When</th><th>API Call</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Session live</td>
+            <td><code>new AgoraRTM.RTM(appId, String(clientUid))</code></td>
+            <td>Creates RTM client instance with UID="1"</td>
+          </tr>
+          <tr>
+            <td>Session live</td>
+            <td><code>rtmClient.login({ token: rtmToken })</code></td>
+            <td>Authenticates with RTM service using the minted AccessToken v1</td>
+          </tr>
+          <tr>
+            <td>Session live</td>
+            <td><code>rtmClient.subscribe(channel)</code></td>
+            <td>Subscribes to the session channel to receive agent transcript events</td>
+          </tr>
+          <tr>
+            <td>Running</td>
+            <td><code>rtmClient.addEventListener('message', handler)</code></td>
+            <td>Listens for JSON transcript events from the ConvoAI agent</td>
+          </tr>
+          <tr>
+            <td>Stop</td>
+            <td><code>rtmClient.removeEventListener('message', handler)</code></td>
+            <td>Detaches listener before logout</td>
+          </tr>
+          <tr>
+            <td>Stop</td>
+            <td><code>rtmClient.logout()</code></td>
+            <td>Cleanly disconnects from RTM service</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>RTM Message Payload Format</h3>
+    <p>Messages arrive as either a string or <code>Uint8Array</code> (decoded with <code>TextDecoder</code>):</p>
+    <pre><code>// assistant.transcription — streaming (isFinal=false) and final
+{
+  "object": "assistant.transcription",
+  "text": "This code is a React hook that...",
+  "turn_id": "42",
+  "final": true
+}
+
+// user.transcription — only final events are displayed
+{
+  "object": "user.transcription",
+  "text": "Can you explain what useMemo does here?",
+  "turn_id": "41",
+  "final": true
+}</code></pre>
+
+    <p>The <code>turn_id</code> is used to update streaming entries in-place: the same turn's chunks accumulate in the transcript until <code>final: true</code> arrives.</p>
+  </div>
+
+  <!-- ── 12. TOKENS ─────────────────────────────── -->
+  <div class="section" id="tokens">
+    <h2>§12 · Token Details &amp; UIDs</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Token</th><th>Builder</th><th>Format</th><th>Expiry Type</th><th>TTL</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>RTC client token</strong></td>
+            <td><code>RtcTokenBuilder.buildTokenWithRtm</code></td>
+            <td>AccessToken2</td>
+            <td>Duration (seconds)</td>
+            <td>3600 s</td>
+          </tr>
+          <tr>
+            <td><strong>RTM token</strong></td>
+            <td><code>RtmTokenBuilder.buildToken</code></td>
+            <td>AccessToken v1</td>
+            <td>Absolute Unix timestamp</td>
+            <td>now + 3600 s</td>
+          </tr>
+          <tr>
+            <td><strong>ConvoAI session</strong></td>
+            <td>agora-agents SDK (internal)</td>
+            <td>not exposed</td>
+            <td><code>ExpiresIn.seconds(3600)</code></td>
+            <td>3600 s</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-wrap" style="margin-top:16px">
+      <table>
+        <thead>
+          <tr><th>Role</th><th>UID</th><th>Hardcoded?</th><th>Used in</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Browser client</strong></td>
+            <td><code>1</code> (<code>CLIENT_UID</code>)</td>
+            <td>Yes — constant</td>
+            <td>RTC join, RTM login, token generation</td>
+          </tr>
+          <tr>
+            <td><strong>AI agent</strong></td>
+            <td><code>config.agentUid</code></td>
+            <td>No — configurable (default <code>"123456"</code>)</td>
+            <td>ConvoAI <code>createSession</code>, companion <code>user-left</code> detection</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Stream-Message Chunking (RTC Fallback)</h3>
+    <p>When RTM token generation fails, the ConvoAI agent sends transcripts via the RTC data channel (<code>stream-message</code> event) in a chunked format:</p>
+    <pre><code>{seq}|{total}|{key}|{payload}
+
+// Example: large message split into 3 chunks:
+0|3|msg-abc|{"object":"assistant.transc
+1|3|msg-abc|ription","text":"The functi
+2|3|msg-abc|on...","turn_id":"5","final":true}</code></pre>
+    <p>The companion reassembles all chunks keyed by <code>key</code> before parsing JSON.</p>
+  </div>
+
+  <!-- ── 13. PROVIDERS ─────────────────────────── -->
+  <div class="section" id="providers">
+    <h2>§13 · Provider Stacks</h2>
+
+    <h3>Default "Agora Managed" Stack (no API keys needed)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Stage</th><th>Provider</th><th>Model / Config</th><th>SDK Class</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>STT</td><td>Deepgram</td><td>nova-3 · en · smartFormat · punctuation</td><td><code>new DeepgramSTT({model:'nova-3', language:'en'})</code></td></tr>
+          <tr><td>LLM</td><td>OpenAI</td><td>gpt-4o-mini · temp 0.7 · top_p 0.95 · max_tokens 1024</td><td><code>new OpenAI({model:'gpt-4o-mini', params:{...}})</code></td></tr>
+          <tr><td>TTS</td><td>MiniMax</td><td>speech_2_6_turbo · English_captivating_female1</td><td><code>new MiniMaxTTS({model:'speech_2_6_turbo', voiceId:...})</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>All STT Providers</h3>
+    <div class="provider-grid">
+      <div class="provider-chip default">Deepgram ★</div>
+      <div class="provider-chip">ARES</div>
+      <div class="provider-chip">AssemblyAI</div>
+      <div class="provider-chip">Amazon Transcribe</div>
+      <div class="provider-chip">Google STT</div>
+      <div class="provider-chip">Microsoft Azure</div>
+      <div class="provider-chip">OpenAI Whisper</div>
+      <div class="provider-chip">Sarvam</div>
+      <div class="provider-chip">Speechmatics</div>
+    </div>
+
+    <h3>All LLM Providers</h3>
+    <div class="provider-grid">
+      <div class="provider-chip default">OpenAI ★</div>
+      <div class="provider-chip">Azure OpenAI</div>
+      <div class="provider-chip">Anthropic</div>
+      <div class="provider-chip">Google Gemini</div>
+      <div class="provider-chip">Groq</div>
+      <div class="provider-chip">Vertex AI</div>
+      <div class="provider-chip">Amazon Bedrock</div>
+      <div class="provider-chip">Dify</div>
+      <div class="provider-chip">Custom LLM</div>
+    </div>
+
+    <h3>All TTS Providers</h3>
+    <div class="provider-grid">
+      <div class="provider-chip default">MiniMax ★</div>
+      <div class="provider-chip">OpenAI TTS</div>
+      <div class="provider-chip">ElevenLabs</div>
+      <div class="provider-chip">Cartesia</div>
+      <div class="provider-chip">Deepgram</div>
+      <div class="provider-chip">Google TTS</div>
+      <div class="provider-chip">Amazon Polly</div>
+      <div class="provider-chip">Microsoft Azure</div>
+      <div class="provider-chip">Hume AI</div>
+      <div class="provider-chip">Murf</div>
+      <div class="provider-chip">Rime</div>
+      <div class="provider-chip">Fish Audio</div>
+      <div class="provider-chip">Sarvam</div>
+    </div>
+
+    <h3>Realtime (MLLM) Providers</h3>
+    <div class="provider-grid">
+      <div class="provider-chip default">OpenAI Realtime ★</div>
+      <div class="provider-chip">Gemini Live</div>
+      <div class="provider-chip">Vertex AI Live</div>
+      <div class="provider-chip">xAI Grok</div>
+    </div>
+
+    <h3>Avatar Providers (Coming Soon — cascading only)</h3>
+    <div class="provider-grid">
+      <div class="provider-chip">LiveAvatar (HeyGen)</div>
+      <div class="provider-chip">Akool</div>
+      <div class="provider-chip">Anam</div>
+      <div class="provider-chip">Generic</div>
+    </div>
+    <p style="color:var(--muted);font-size:12px;margin-top:8px">★ = Agora managed default. No API key required when using these.</p>
+  </div>
+
+  <!-- ── 14. LIFECYCLE ─────────────────────────── -->
+  <div class="section" id="lifecycle">
+    <h2>§14 · Session Lifecycle States</h2>
+
+    <div style="background:var(--surf);border:1px solid var(--border);border-radius:8px;padding:28px;margin:16px 0;overflow-x:auto">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:0;min-width:500px">
+        <div style="padding:10px 24px;border-radius:6px;border:2px solid var(--border);color:var(--muted);font-family:var(--font-mono);font-size:12px;font-weight:700">idle</div>
+        <div style="width:2px;height:20px;background:var(--border)"></div>
+        <div style="font-size:10px;font-family:var(--font-mono);color:var(--muted);margin-bottom:4px">User clicks Start (voice or chat)</div>
+        <div style="padding:10px 24px;border-radius:6px;border:2px solid var(--orange);color:var(--orange);background:var(--orange-dim);font-family:var(--font-mono);font-size:12px;font-weight:700">starting</div>
+        <div style="display:flex;gap:80px;align-items:flex-start">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0">
+            <div style="width:2px;height:20px;background:var(--border)"></div>
+            <div style="font-size:10px;font-family:var(--font-mono);color:var(--green);margin-bottom:4px">session.start() succeeds</div>
+            <div style="padding:10px 24px;border-radius:6px;border:2px solid var(--green);color:var(--green);background:var(--green-dim);font-family:var(--font-mono);font-size:12px;font-weight:700">live</div>
+            <div style="width:2px;height:20px;background:var(--border)"></div>
+            <div style="font-size:10px;font-family:var(--font-mono);color:var(--muted);margin-bottom:4px">User clicks Stop / 404 error</div>
+            <div style="font-size:10px;font-family:var(--font-mono);color:var(--muted);margin-top:4px">↓</div>
+            <div style="font-size:10px;font-family:var(--font-mono);color:var(--muted);margin-bottom:4px">back to idle</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0;margin-top:24px">
+            <div style="width:2px;height:20px;background:var(--border)"></div>
+            <div style="font-size:10px;font-family:var(--font-mono);color:var(--red);margin-bottom:4px">API error / bad credentials</div>
+            <div style="padding:10px 24px;border-radius:6px;border:2px solid var(--red);color:var(--red);background:var(--red-dim);font-family:var(--font-mono);font-size:12px;font-weight:700">error</div>
+            <div style="width:2px;height:20px;background:var(--border)"></div>
+            <div style="font-size:10px;font-family:var(--font-mono);color:var(--muted);margin-bottom:4px">User acknowledges</div>
+            <div style="font-size:10px;font-family:var(--font-mono);color:var(--muted);margin-top:4px">↓ back to idle</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p style="color:var(--muted);font-size:12.5px">Session TTL is <strong style="color:var(--text)">3600 seconds</strong> for all three token types (RTC, RTM, ConvoAI session). The chat mode 404 error handler auto-transitions back to idle with the message <em>"Session ended — the agent timed out."</em></p>
+  </div>
+
+  <!-- ── 15. FILE MAP ──────────────────────────── -->
+  <div class="section" id="files">
+    <h2>§15 · File Map</h2>
+    <div class="file-map">
+      <div class="file-row">
+        <div class="file-path">src/backend.ts</div>
+        <div class="file-desc"><strong>AgoraBackendClient</strong> — wraps <code>agora-agents</code> + <code>agora-token</code>. Owns <code>startSession()</code>, <code>stopSession()</code>, <code>sendChatMessage()</code>. Only file that touches ConvoAI REST and token generation.</div>
+      </div>
+      <div class="file-row">
+        <div class="file-path">src/extension.ts</div>
+        <div class="file-desc"><strong>VS Code entry point</strong> — registers commands, manages webview panel lifecycle, bridges postMessages between webview and backend. Writes companion HTML to tmpdir and calls <code>openExternal()</code> for voice mode.</div>
+      </div>
+      <div class="file-row">
+        <div class="file-path">src/webview.ts</div>
+        <div class="file-desc"><strong>Full webview HTML/JS</strong> — UI rendering, state management (persisted via <code>vscode.setState</code>), RTM client for transcript, chat input handling. Includes <code>joinRtmOnly()</code> — the webview never joins RTC.</div>
+      </div>
+      <div class="file-row">
+        <div class="file-path">src/types.ts</div>
+        <div class="file-desc"><strong>Type definitions</strong> — <code>SessionState</code>, <code>ModelConfig</code>, all provider ID union types (<code>SttProviderId</code>, <code>LlmProviderId</code>, <code>TtsProviderId</code>, <code>MllmProviderId</code>, <code>AvatarProviderId</code>).</div>
+      </div>
+      <div class="file-row">
+        <div class="file-path">src/prompt.ts</div>
+        <div class="file-desc"><strong>Prompt builder</strong> — assembles the ConvoAI system prompt from <code>SelectedCodeContext</code> + quick action (<code>explain</code> / <code>find-bugs</code> / <code>refactor</code> / <code>tests</code> / <code>summarize</code>).</div>
+      </div>
+      <div class="file-row">
+        <div class="file-path">media/AgoraRTC_N.js</div>
+        <div class="file-desc"><strong>Agora RTC Web SDK v4.20.2</strong> — bundled locally. Loaded in the browser companion via CDN URL (<code>cdn.jsdelivr.net</code>). Also served as a local URI to the VS Code webview (currently unused in webview).</div>
+      </div>
+      <div class="file-row">
+        <div class="file-path">media/agora-rtm.js</div>
+        <div class="file-desc"><strong>Agora RTM Web SDK v2.2.3</strong> — bundled locally. Loaded in both the VS Code webview (via <code>webview.asWebviewUri</code>) and the browser companion (via CDN URL). Powers transcript delivery in both surfaces.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 16. DESIGN DECISIONS ──────────────────── -->
+  <div class="section" id="decisions">
+    <h2>§16 · Key Design Decisions</h2>
+
+    <div style="display:grid;gap:10px;margin:16px 0">
+      <div class="callout">
+        <strong>App Certificate never leaves the extension host.</strong> Tokens are minted in Node.js using <code>agora-token</code>. The companion receives only the signed <code>clientToken</code>, <code>rtmToken</code>, and a pre-computed <code>stopAuth</code> Basic Auth header — never the raw certificate.
+      </div>
+      <div class="callout green">
+        <strong>Browser companion is a separate HTML file in tmpdir.</strong> The VS Code webview sandbox blocks microphone access and direct audio playback. The companion is written to <code>os.tmpdir()</code> and opened via <code>vscode.env.openExternal()</code> to get a full browser context with mic/speaker APIs.
+      </div>
+      <div class="callout purple">
+        <strong>Webview uses RTM only — no RTC join.</strong> The sidebar only needs the transcript text, not audio. It joins RTM directly for transcript events without touching the RTC channel, keeping the webview's Agora footprint minimal.
+      </div>
+      <div class="callout orange">
+        <strong>Chat mode reuses the voice ConvoAI agent.</strong> <code>idleTimeout:0</code> prevents auto-stop on silence. <code>session.think()</code> bypasses the STT stage entirely, injecting text directly into the LLM pipeline. The agent still runs TTS but no audio is consumed.
+      </div>
+      <div class="callout">
+        <strong><code>enable_rtm: true</code> is always set.</strong> This ensures transcripts are reliably delivered via the RTM channel in both voice and chat mode, regardless of whether the RTC stream-message data channel is available.
+      </div>
+      <div class="callout green">
+        <strong>Stop endpoint is pre-computed at session start.</strong> The browser companion receives <code>stopUrl</code> + <code>stopAuth</code> so it can call the ConvoAI stop endpoint with <code>keepalive: true</code> even when the tab is being closed — ensuring the agent is stopped even if the VS Code extension host is unreachable.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 17. PRICING ────────────────────────────── -->
+  <div class="section" id="pricing">
+    <h2>§17 · Pricing Guide</h2>
+    <p>Three Agora products run under the hood. Their costs differ dramatically in magnitude — ConvoAI dominates everything else regardless of mode.</p>
+
+    <div class="page-meta" style="margin-bottom:20px">
+      <span class="badge green">300 min free · ConvoAI (one-time)</span>
+      <span class="badge green">10,000 min/mo free · RTC</span>
+      <span class="badge green">1M msgs/mo free · RTM</span>
+      <span class="badge">Rates · agora.io/en/pricing · July 2026</span>
+    </div>
+
+    <div class="product-grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="product-card pc-convoai">
+        <span class="product-card-badge">ConvoAI</span>
+        <div class="product-card-name">Conversational AI</div>
+        <div style="font-size:22px;font-weight:700;font-family:var(--font-mono);color:var(--text);margin:4px 0 2px;font-variant-numeric:tabular-nums">$0.10<span style="font-size:13px;font-weight:400;color:var(--muted)"> / min</span></div>
+        <div style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--green)">✓ First 300 min free (one-time)</div>
+        <div class="product-card-desc">Applies to every session — voice and chat. The dominant cost. Charged from <code>session.start()</code> to stop.</div>
+      </div>
+      <div class="product-card pc-rtc">
+        <span class="product-card-badge">RTC Audio</span>
+        <div class="product-card-name">Voice Calling</div>
+        <div style="font-size:22px;font-weight:700;font-family:var(--font-mono);color:var(--text);margin:4px 0 2px;font-variant-numeric:tabular-nums">$0.99<span style="font-size:13px;font-weight:400;color:var(--muted)"> / 1,000 min</span></div>
+        <div style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--green)">✓ First 10,000 min/mo free</div>
+        <div class="product-card-desc">Voice mode only. Two participants per session (client + agent). Chat mode has zero RTC cost.</div>
+      </div>
+      <div class="product-card pc-rtm">
+        <span class="product-card-badge">RTM</span>
+        <div class="product-card-name">Signaling / Transcripts</div>
+        <div style="font-size:22px;font-weight:700;font-family:var(--font-mono);color:var(--text);margin:4px 0 2px;font-variant-numeric:tabular-nums">$59<span style="font-size:13px;font-weight:400;color:var(--muted)"> / mo (next tier)</span></div>
+        <div style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--green)">✓ First 1,000,000 msgs/mo free</div>
+        <div class="product-card-desc">Used in both modes for transcript delivery. 1M msgs ≈ 278 hours of conversation — effectively unlimited for most users.</div>
+      </div>
+    </div>
+
+    <h3>Cost by session mode</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Cost component</th><th>Voice mode</th><th>Chat mode</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>ConvoAI agent</strong></td>
+            <td><code>$0.10/min</code> — primary cost</td>
+            <td><code>$0.10/min</code> — only cost</td>
+          </tr>
+          <tr>
+            <td><strong>RTC audio</strong></td>
+            <td>~$0.002/min for 2 participants<br><span style="font-size:11px;color:var(--muted)">usually within 10,000 min free tier</span></td>
+            <td style="color:var(--muted)">$0 — no RTC channel joined</td>
+          </tr>
+          <tr>
+            <td><strong>RTM transcripts</strong></td>
+            <td style="color:var(--green)">free tier (20–60 msgs/min)</td>
+            <td style="color:var(--green)">free tier (10–30 msgs/min)</td>
+          </tr>
+          <tr>
+            <td><strong>Effective total</strong></td>
+            <td><strong>~$0.102/min</strong></td>
+            <td><strong>~$0.10/min</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <strong>The 80/20 rule:</strong> ConvoAI at $0.10/min is the only number that matters for individual and small-team usage. RTC stays inside its free tier for any developer doing under ~2.8 hrs/day of voice. RTM almost never triggers a charge.
+    </div>
+
+    <h3>When do charges begin?</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Product</th><th>Free until…</th><th>What triggers the first bill</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>ConvoAI</strong> (voice &amp; chat)</td>
+            <td>300 session minutes<br><span style="font-size:11px;color:var(--muted)">one-time new-account credit</span></td>
+            <td>Every minute after that · at 30 min/day ≈ 10 days of use</td>
+          </tr>
+          <tr>
+            <td><strong>RTC audio</strong> (voice only)</td>
+            <td>10,000 participant-min/mo<br><span style="font-size:11px;color:var(--muted)">= 5,000 voice session minutes</span></td>
+            <td>~2.8 hrs/day of continuous voice · resets monthly</td>
+          </tr>
+          <tr>
+            <td><strong>RTM</strong> (voice &amp; chat)</td>
+            <td>1,000,000 messages/mo<br><span style="font-size:11px;color:var(--muted)">≈ 278 hrs of conversation</span></td>
+            <td>Practically unlimited for individuals and small teams</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Monthly cost examples (ongoing, post free trial)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Scenario</th><th>Session time</th><th>ConvoAI</th><th>RTC</th><th>Total / month</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Solo dev · 30 min/day · voice</td>
+            <td style="font-family:var(--font-mono);color:var(--muted)">900 min</td>
+            <td style="font-family:var(--font-mono)">$90.00</td>
+            <td style="color:var(--green);font-family:var(--font-mono)">free tier</td>
+            <td style="font-family:var(--font-mono);font-weight:700">~$90</td>
+          </tr>
+          <tr>
+            <td>Solo dev · 1 hr/day · voice</td>
+            <td style="font-family:var(--font-mono);color:var(--muted)">1,800 min</td>
+            <td style="font-family:var(--font-mono)">$180.00</td>
+            <td style="color:var(--green);font-family:var(--font-mono)">free tier</td>
+            <td style="font-family:var(--font-mono);font-weight:700">~$180</td>
+          </tr>
+          <tr>
+            <td>Solo dev · 1 hr/day · chat only</td>
+            <td style="font-family:var(--font-mono);color:var(--muted)">1,800 min</td>
+            <td style="font-family:var(--font-mono)">$180.00</td>
+            <td style="color:var(--muted);font-family:var(--font-mono)">$0</td>
+            <td style="font-family:var(--font-mono);font-weight:700">~$180</td>
+          </tr>
+          <tr>
+            <td>Team of 5 · 30 min/day · voice</td>
+            <td style="font-family:var(--font-mono);color:var(--muted)">4,500 min</td>
+            <td style="font-family:var(--font-mono)">$450.00</td>
+            <td style="color:var(--green);font-family:var(--font-mono)">free tier</td>
+            <td style="font-family:var(--font-mono);font-weight:700">~$450</td>
+          </tr>
+          <tr>
+            <td>Team of 10 · 1 hr/day · voice</td>
+            <td style="font-family:var(--font-mono);color:var(--muted)">18,000 min</td>
+            <td style="font-family:var(--font-mono)">$1,800.00</td>
+            <td style="font-family:var(--font-mono)">~$7.92</td>
+            <td style="font-family:var(--font-mono);font-weight:700">~$1,808</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Cost optimization tips</h3>
+    <div style="display:grid;gap:8px;margin:16px 0">
+      <div class="callout green"><strong>Stop sessions explicitly.</strong> ConvoAI charges from <code>session.start()</code> to stop. Voice mode auto-stops after 30 s of silence (<code>idleTimeout:30</code>). Chat mode has <code>idleTimeout:0</code> — click Stop as soon as you're done.</div>
+      <div class="callout"><strong>Use chat for quick questions.</strong> Chat mode skips RTC entirely — zero participant-minutes consumed. The ConvoAI cost is identical, but it helps teams stay inside the 10,000 free RTC minutes per month.</div>
+      <div class="callout purple"><strong>One Agora project per team.</strong> Each Agora project gets its own free tier (10,000 RTC min, 1M RTM messages). Large teams can spread load across separate projects with distinct <code>appId</code> / <code>appCertificate</code> pairs.</div>
+      <div class="callout orange"><strong>Monitor in Agora Console.</strong> The Usage dashboard shows ConvoAI minutes, RTC minutes, and RTM messages in real time. Set billing alerts before you expect to hit thresholds.</div>
+    </div>
+
+    <p style="font-size:11px;color:var(--muted);font-family:var(--font-mono);margin-top:20px">Rates from agora.io/en/pricing · July 2026. Verify current rates in Agora Console before making budget decisions.</p>
+  </div>
+</main>
+
+<script>
+// ── Theme toggle ──────────────────────────────────────────────────
+(function(){
+  var btn = document.getElementById('theme-btn');
+  var root = document.documentElement;
+  var mq = window.matchMedia('(prefers-color-scheme: dark)');
+  var current = null;
+
+  function getSystemTheme(){ return mq.matches ? 'dark' : 'light'; }
+  function apply(theme){
+    current = theme;
+    root.setAttribute('data-theme', theme);
+    btn.textContent = theme === 'dark' ? '☀' : '◐';
+  }
+  apply(getSystemTheme());
+  btn.addEventListener('click', function(){
+    apply(current === 'dark' ? 'light' : 'dark');
+  });
+
+  // ── Active TOC link on scroll ─────────────────────────────────
+  var sections = document.querySelectorAll('[id]');
+  var navLinks = document.querySelectorAll('nav a[href^="#"]');
+  function onScroll(){
+    var scrollY = window.scrollY + 80;
+    var active = null;
+    sections.forEach(function(s){
+      if(s.offsetTop <= scrollY) active = s.id;
+    });
+    navLinks.forEach(function(a){
+      a.classList.toggle('active', a.getAttribute('href') === '#'+active);
+    });
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+})();
+</script>
